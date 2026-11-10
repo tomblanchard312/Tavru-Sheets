@@ -14,8 +14,8 @@ use winsafe::{HPROCESS, TokenInfo, co};
 fn process_sid(process: &HPROCESS) -> Result<String, Error> {
     let token = process.OpenProcessToken(co::TOKEN::QUERY).map_err(|e| io::Error::other(e.to_string()))?;
     let info = token.GetTokenInformation(co::TOKEN_INFORMATION_CLASS::User).map_err(|e| io::Error::other(e.to_string()))?;
-    let TokenInfo::User(user) = info else { return Err(Error::Invalid("Cannot identify the Enki account".into())) };
-    let sid = user.User.Sid().ok_or_else(|| Error::Invalid("Missing Enki account SID".into()))?;
+    let TokenInfo::User(user) = info else { return Err(Error::Invalid("Cannot identify the Oqelith account".into())) };
+    let sid = user.User.Sid().ok_or_else(|| Error::Invalid("Missing Oqelith account SID".into()))?;
     winsafe::ConvertSidToStringSid(sid).map_err(|e| io::Error::other(e.to_string()).into())
 }
 
@@ -29,7 +29,7 @@ fn validate(path: &Path, sid: &str) -> Result<(), Error> {
     if suffix.is_some_and(|s| !s.is_empty() && s.len() <= 64 && s.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')) {
         Ok(())
     } else {
-        Err(Error::Invalid("Enki must use a local pipe belonging to your Windows account".into()))
+        Err(Error::Invalid("Oqelith must use a local pipe belonging to your Windows account".into()))
     }
 }
 
@@ -71,7 +71,7 @@ impl Stream {
         let process = HPROCESS::OpenProcess(co::PROCESS::QUERY_LIMITED_INFORMATION, false, pipe.server_process_id()?)
             .map_err(|e| io::Error::other(e.to_string()))?;
         if process_sid(&process)? != sid {
-            return Err(Error::Invalid("Enki is running under a different Windows account".into()));
+            return Err(Error::Invalid("Oqelith is running under a different Windows account".into()));
         }
         pipe.set_nonblocking(true)?;
         Ok(Self { pipe: Arc::new(pipe), read_timeout: Duration::from_secs(5), write_timeout: Duration::from_secs(30) })

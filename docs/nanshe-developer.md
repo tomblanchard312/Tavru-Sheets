@@ -1,4 +1,4 @@
-# Developer and Enki in Tavru Sheets
+# Developer and Oqelith in Tavru Sheets
 
 Last updated: 2026-10-28.
 
@@ -13,11 +13,11 @@ language/compiler and local-service client from Nisaba
 | Developer interface | Optional VBA CLI; no integrated editor | Recorded command scripts; preserves VBA projects | In-app source editor, language selector, runtime output, review and apply |
 | VBA | VBA → VB.NET → Roslyn; Word object model | Preserved but not executed | Reused transpiler/security checks, Excel-style object model, isolated preview process |
 | Python / R | No reusable execution integration | Python editor highlighting only | Local interpreters, shared command bridge, range read/write helpers |
-| Assistant | Local SharedAI v2 client, Word tracked changes | No assistant | Local Enki v2 client, formula proposals and VBA/Python/R drafts |
+| Assistant | Local SharedAI v2 client, Word tracked changes | No assistant | Local Oqelith v2 client, formula proposals and VBA/Python/R drafts |
 | Edits | Word command protocol | Spreadsheet commands and undo groups | Existing spreadsheet commands, atomic grouped replay with document/revision checks |
 
-Enki retains `sharedai-daemon`, `SHAREDAI_*`, and `SharedAI` paths. Tavru Sheets uses those exact
-identifiers; it does not embed a second inference engine. No dependency on the private Enki
+Oqelith retains `sharedai-daemon`, `SHAREDAI_*`, and `SharedAI` paths. Tavru Sheets uses those exact
+identifiers; it does not embed a second inference engine. No dependency on the private Oqelith
 repository is needed to compile Tavru Sheets. The protocol client comes from public Nisaba source.
 
 ## Language runtimes
@@ -130,7 +130,7 @@ and external side effects remain outside this lifecycle; this is not an OS resou
 Source for VBA, Python and R is stored separately using Tavru Sheets's existing hidden-name storage.
 It survives XLSX saves; edited drafts join the normal Save/Close flow. CSV exports cannot retain
 script source. Code is never executed on open. Switching source language, editing code, or
-accepting an Enki code draft clears the run acknowledgement and invalidates the old preview.
+accepting an Oqelith code draft clears the run acknowledgement and invalidates the old preview.
 
 Only run code you trust. Python/R imports have ordinary-user filesystem and network access;
 external file/network side effects happen during preview and cannot be undone by the workbook.
@@ -138,13 +138,13 @@ Nisaba's VBA syntax/symbol allow-list is retained as defence in depth, not an OS
 preview and replay allow-list protects the workbook command channel; it does not make arbitrary
 local code safe. The GUI and helpers never request administrator rights.
 
-## Enki
+## Oqelith
 
-Open **Review → Enki** or **Developer → Enki**. Existing control commands retain their `view.scribe` and `ui.scribe*` identifiers.
+Open **Review → Oqelith** or **Developer → Oqelith**. Existing control commands retain their `view.scribe` and `ui.scribe*` identifiers.
 
 Choose **Plan** to get an explanation of the proposed steps without generating an apply action. Choose **Write VBA**, **Write Python**, or **Write R** to draft code for review. In **Plan**, choose **Automatic** or **Planner**. Planner uses a registered DeepSeek R1 model without displaying its model ID. Use **Refresh models** after registration. Coding tasks continue to choose their own model independently. The control command accepts `planModel` in Plan mode.
 
-Run a configured local Enki service and register a chat model using Enki's model workflow.
+Run a configured local Oqelith service and register a chat model using Oqelith's model workflow.
 The model refresh command connects to `SHAREDAI_SOCKET` or `$XDG_RUNTIME_DIR/sharedai/ipc.sock`, starting
 `sharedai-daemon` from `SHAREDAI_DAEMON`, the executable's helper directory, or PATH if needed.
 On Windows, the default is `\\.\pipe\SharedAI-<your-user-SID>-default`, overridden by
@@ -152,14 +152,14 @@ On Windows, the default is `\\.\pipe\SharedAI-<your-user-SID>-default`, overridd
 the server process's token SID before sending requests and opens the pipe with identification-only
 security quality of service. Keep `sharedai-worker.exe` beside `sharedai-daemon.exe`; set
 `SHAREDAI_DAEMON` to the daemon executable when it is not in a helper directory or on PATH.
-Autostart runs as the current user without elevation or a console window. Enki creates its protected
+Autostart runs as the current user without elevation or a console window. Oqelith creates its protected
 registry under `%LOCALAPPDATA%\SharedAI` by default. An explicit `SHAREDAI_REGISTRY` override
-must have a parent satisfying Enki's private-storage ACL checks; ordinary inherited permissions
+must have a parent satisfying Oqelith's private-storage ACL checks; ordinary inherited permissions
 are rejected. Use the default private location in a fresh test profile. Pipe connection attempts,
 reads and writes have deadlines; streaming polls for Stop every 200 ms.
 No models are downloaded by Tavru Sheets.
 
-Enki sends only the user's request and at most 100 cells (32 KiB) from the captured selection to
+Oqelith sends only the user's request and at most 100 cells (32 KiB) from the captured selection to
 that local endpoint. It streams replies off the UI thread and supports Stop. Nisaba's reasoning
 tag filtering is reused; truncated, failed or cancelled replies never become actionable
 suggestions. Formula proposals use canonical English formula syntax and target the cell captured
@@ -173,15 +173,15 @@ An explicit click on the worksheet restores its normal keyboard handling.
 - Desktop scripting uses standard child-process pipes on Linux, macOS, Windows and BSD, with
   separately installed runtimes. Runtime paths containing spaces are passed as executable paths,
   never shell strings.
-- The Enki client uses Unix sockets on Linux/macOS/BSD and per-user named pipes on Windows.
+- The Oqelith client uses Unix sockets on Linux/macOS/BSD and per-user named pipes on Windows.
   The Windows transport shares negotiation, model registration/listing, framing and chat handling
   with Unix. Its Windows-only dependencies expose safe pipe and process-token operations.
-- Web builds retain source editing/storage. Local subprocess execution and local Enki are disabled.
+- Web builds retain source editing/storage. Local subprocess execution and local Oqelith are disabled.
 - Cross-platform workflow checks the .NET object model on Linux/macOS/Windows, the complete
   Rust-to-runtime bridge on Linux, and real Windows named-pipe fixtures plus clippy on Windows.
-- Local Linux Enki inference and the Scribe command path were exercised with a real daemon,
+- Local Linux Oqelith inference and the Scribe command path were exercised with a real daemon,
   CPU worker and chat model. Native Windows/macOS/FreeBSD GUI execution and Windows against
-  the real Enki daemon remain separate acceptance checks.
+  the real Oqelith daemon remain separate acceptance checks.
 
 ## Testing
 
@@ -199,8 +199,8 @@ cargo xtask ci
 
 The Python bridge test runs with the configured interpreter or system Python. The real R/.NET
 bridge tests are conditional on their explicit runtime environment variables; omitting those
-variables is not evidence that the runtimes were exercised. The Enki test server is a local
-protocol fixture by default. Opt-in real-service checks require an isolated running Enki:
+variables is not evidence that the runtimes were exercised. The Oqelith test server is a local
+protocol fixture by default. Opt-in real-service checks require an isolated running Oqelith:
 
 ```sh
 export SHAREDAI_SOCKET=/path/to/private-test-dir/ipc.sock # Windows: SHAREDAI_PIPE
@@ -238,32 +238,32 @@ The actual VBA helper, system Python 3, and R 4.3.3 with jsonlite 1.8.8 were exe
 extracted into a temporary workspace from distribution packages and launched through a local
 wrapper; it was not installed on the host.
 
-A follow-up test built the current Enki daemon and CPU worker, used an isolated private socket,
+A follow-up test built the current Oqelith daemon and CPU worker, used an isolated private socket,
 registry and data directories, and loaded `bartowski/SmolLM2-135M-Instruct-GGUF` Q4_K_M from
 [the model publisher](https://huggingface.co/bartowski/SmolLM2-135M-Instruct-GGUF). The opt-in
 client test passed registration, discovery, real chat streaming (terminal `stop`, 24 prompt tokens,
 2 completion tokens, `Hello.`), cancellation after a chunk, and missing-model error handling.
 The opt-in Scribe test passed Refresh, asynchronous reply, Stop, and unchanged workbook revision.
 This 135M model is a transport smoke test, not validation of generated formulas or code quality.
-The model and Enki binaries stay outside the repository. Windows transport/tests also passed
+The model and Oqelith binaries stay outside the repository. Windows transport/tests also passed
 local cross-target compilation and clippy; native hosted pipe test results are tracked in the PR.
 
 The inherited fresh-file permission test expects a restrictive mask;
 it fails under this host's `umask 0002`. No file-saving implementation was changed in this port.
 
 
-## Shared Enki memory and worksheet editing
+## Shared Oqelith memory and worksheet editing
 
-Enki protocol 3 stores completed Enki conversations across the app and shares them with
+Oqelith protocol 3 stores completed Oqelith conversations across the app and shares them with
 Nisaba. The conversation section shows history and a compacted summary. Preferences and
 style are saved explicitly and survive clearing history. Compaction is local, lossy and commits
 only after successful generation; concurrent changes are preserved by revision checks. Full
 history asks for compaction or clearing, and a failed append is reported. Prompts and answers
-may contain sensitive text and are persisted in Enki's private local registry. An older Enki
+may contain sensitive text and are persisted in Oqelith's private local registry. An older Oqelith
 can still answer but cannot save shared memory. Use matching updated app and daemon builds.
 
 **Chat and edit** can prepare cell values, formulas, highlights, font colours, bold/italic,
-number formats and selection changes on the current sheet. Enki sees bounded live sheet
+number formats and selection changes on the current sheet. Oqelith sees bounded live sheet
 and selection data. Plans are validated in a workbook copy, with limits of 32 actions and
 1000 cells. Invalid formulas and unsupported commands are rejected. Review the listed changes
 and choose **Apply worksheet changes**; they form one Undo step. Changing the workbook first

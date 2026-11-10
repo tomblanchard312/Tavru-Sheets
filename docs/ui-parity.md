@@ -1,6 +1,6 @@
 # UI parity
 
-> **Enki branding: 2026-11-05** · The assistant uses the Enki name and official icon in the ribbon, pane and analysis help. Plan mode offers a separate picker for registered DeepSeek R1 models. Existing control identifiers remain compatible.
+> **Oqelith branding: 2026-11-05** · The assistant uses the Oqelith name and official icon in the ribbon, pane and analysis help. Plan mode offers a separate picker for registered DeepSeek R1 models. Existing control identifiers remain compatible.
 
 > **Eridu Design System: 2026-11-05** · Shared light and dark chrome, dialog action colors, control spacing and File navigation follow EriduOS tokens. Interface, page titles and code prefer installed Inter, Source Serif 4 and JetBrains Mono with existing fallbacks. Worksheet fonts remain workbook-driven. The spreadsheet ribbon and original icon set remain part of the workspace. Recent-file dates and status figures prefer installed Inter Tabular. Phosphor migration and full accessibility and platform acceptance are still open.
 

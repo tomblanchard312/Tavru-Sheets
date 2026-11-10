@@ -27,12 +27,14 @@ pub fn show(app: &mut SheetApp, ui: &mut Ui) {
         ui.horizontal(|ui| {
             if pane == "scribe" {
                 let (rect, _) = ui.allocate_exact_size(vec2(24.0, 24.0), egui::Sense::hover());
-                crate::icons::paint(ui.painter(), rect, crate::icons::Icon::Enki, t.text);
+                if let Some(texture) = crate::icons::oqelith_texture(ui.ctx()) {
+                    ui.painter().image(texture.id(), rect, egui::Rect::from_min_max(egui::Pos2::ZERO, egui::pos2(1.0, 1.0)), egui::Color32::WHITE);
+                }
             }
             let title = match pane.as_str() {
                 "comments" => "Comments",
                 "developer" => "Developer",
-                "scribe" => "Enki",
+                "scribe" => "Oqelith",
                 "watch" => "Watch Window",
                 "selection" => "Selection",
                 "formatChart" => "Format Chart Area",
@@ -52,8 +54,8 @@ pub fn show(app: &mut SheetApp, ui: &mut Ui) {
         if pane == "scribe" {
             egui::Panel::bottom("scribe_enki_footer").exact_size(24.0).frame(egui::Frame::NONE).show_separator_line(false).show(ui, |ui| {
                 ui.horizontal(|ui| {
-                    crate::icons::enki_badge(ui, 20.0);
-                    ui.label(egui::RichText::new("Powered by Enki").small().weak());
+                    crate::icons::oqelith_badge(ui, 20.0);
+                    ui.label(egui::RichText::new("Powered by Oqelith").small().weak());
                 });
             });
         }

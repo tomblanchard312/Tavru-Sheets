@@ -8,26 +8,33 @@ use egui::{Color32, Painter, Pos2, Rect, Stroke, pos2, vec2};
 
 use crate::theme::{Cat, Tokens};
 
-/// Cached companion artwork; a malformed asset leaves the text fully usable.
-pub(crate) fn enki_badge(ui: &mut egui::Ui, size: f32) {
-    let key = egui::Id::unique("enki.character.badge");
-    let texture = ui.ctx().data(|data| data.get_temp::<egui::TextureHandle>(key)).or_else(|| {
-        let rgba = image::load_from_memory(include_bytes!("../../../assets/icons/enki-character.png")).ok()?.into_rgba8();
-        let pixels = egui::ColorImage::from_rgba_unmultiplied([rgba.width() as usize, rgba.height() as usize], rgba.as_raw());
-        let texture = ui.ctx().load_texture("Enki character", pixels, egui::TextureOptions::LINEAR);
-        ui.ctx().data_mut(|data| data.insert_temp(key, texture.clone()));
-        Some(texture)
-    });
+const OQELITH_PNG: &[u8] = include_bytes!("../../../assets/icons/oqelith.png");
+
+pub(crate) fn oqelith_texture(ctx: &egui::Context) -> Option<egui::TextureHandle> {
+    let key = egui::Id::unique("oqelith.icon.badge");
+    if let Some(texture) = ctx.data(|data| data.get_temp::<egui::TextureHandle>(key)) {
+        return Some(texture);
+    }
+    let rgba = image::load_from_memory(OQELITH_PNG).ok()?.into_rgba8();
+    let pixels = egui::ColorImage::from_rgba_unmultiplied([rgba.width() as usize, rgba.height() as usize], rgba.as_raw());
+    let texture = ctx.load_texture("Oqelith", pixels, egui::TextureOptions::LINEAR);
+    ctx.data_mut(|data| data.insert_temp(key, texture.clone()));
+    Some(texture)
+}
+
+/// Cached Oqelith mark; a malformed asset leaves the text fully usable.
+pub(crate) fn oqelith_badge(ui: &mut egui::Ui, size: f32) {
+    let texture = oqelith_texture(ui.ctx());
     if let Some(texture) = texture {
-        ui.add(egui::Image::new((texture.id(), texture.size_vec2())).fit_to_exact_size(egui::vec2(size, size))).on_hover_text("Enki");
+        ui.add(egui::Image::new((texture.id(), texture.size_vec2())).fit_to_exact_size(egui::vec2(size, size))).on_hover_text("Oqelith");
     }
 }
 
-pub(crate) fn enki_label(ui: &mut egui::Ui, text: impl Into<egui::WidgetText>) -> egui::Response {
+pub(crate) fn oqelith_label(ui: &mut egui::Ui, text: impl Into<egui::WidgetText>) -> egui::Response {
     let text = text.into();
-    if text.text().contains("Enki") {
+    if text.text().contains("Oqelith") {
         ui.horizontal_wrapped(|ui| {
-            enki_badge(ui, 36.0);
+            oqelith_badge(ui, 36.0);
             ui.label(text)
         })
         .inner
@@ -980,18 +987,18 @@ mod scribe_brand_tests {
 }
 
 #[cfg(test)]
-mod enki_companion_tests {
+mod oqelith_icon_tests {
     use super::*;
     #[test]
-    fn companion_is_transparent_and_its_texture_is_reused() {
-        let rgba = image::load_from_memory(include_bytes!("../../../assets/icons/enki-character.png")).unwrap().into_rgba8();
-        assert_eq!(rgba.dimensions(), (256, 256));
+    fn icon_is_transparent_and_its_texture_is_reused() {
+        let rgba = image::load_from_memory(OQELITH_PNG).unwrap().into_rgba8();
+        assert_eq!(rgba.dimensions(), (128, 128));
         assert!(rgba.pixels().any(|pixel| pixel[3] == 0));
         let ctx = egui::Context::default();
         let mut expected = None;
         for _ in 0..3 {
-            let mut output = ctx.run_ui(egui::RawInput::default(), |ui| enki_badge(ui, 36.0));
-            let texture = ctx.data(|data| data.get_temp::<egui::TextureHandle>(egui::Id::unique("enki.character.badge"))).unwrap();
+            let mut output = ctx.run_ui(egui::RawInput::default(), |ui| oqelith_badge(ui, 36.0));
+            let texture = ctx.data(|data| data.get_temp::<egui::TextureHandle>(egui::Id::unique("oqelith.icon.badge"))).unwrap();
             if let Some(expected) = expected {
                 assert_eq!(texture.id(), expected);
             } else {

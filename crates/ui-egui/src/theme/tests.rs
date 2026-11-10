@@ -354,3 +354,20 @@ fn fedora_package_folders_are_searched_after_the_other_linux_layouts() {
     let noto = mono.iter().position(|p| p == "/usr/share/fonts/google-noto-vf/NotoSansMono[wght].ttf");
     assert!(noto.is_some() && noto.unwrap_or(0) + 1 == mono.len(), "Fedora's default Noto Sans Mono must be the last resort: {mono:?}");
 }
+
+#[test]
+fn chrome_uses_shared_style_without_recoloring_the_sheet() {
+    for (tokens, shared) in [(Tokens::light(), tavru_style::LIGHT), (Tokens::dark(), tavru_style::DARK)] {
+        assert_eq!(tokens.window, shared.background);
+        assert_eq!(tokens.primary, shared.primary);
+        assert_eq!(tokens.text, shared.text);
+        assert_eq!(tokens.grid_bg, Color32::WHITE);
+        assert_eq!(tokens.cell_text, Color32::BLACK);
+    }
+    let ctx = egui::Context::default();
+    apply(&ctx, true);
+    assert_eq!(ctx.style_of(egui::Theme::Dark).visuals.widgets.inactive.corner_radius, egui::CornerRadius::same(tavru_style::radius::CONTROL));
+    let fonts = font_definitions();
+    assert!(fonts.families.contains_key(&tavru_style::fonts::semibold()));
+    assert!(fonts.families.contains_key(&FontFamily::Name(CELL.into())));
+}

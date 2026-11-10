@@ -1,4 +1,4 @@
-//! Developer and Enki panes; edits stay in a preview until explicitly applied.
+//! Developer and Oqelith panes; edits stay in a preview until explicitly applied.
 use std::collections::{HashMap, HashSet};
 
 use nanshe_engine::cmd::developer::{MAX_SOURCE, MAX_STEPS};
@@ -127,7 +127,7 @@ pub(crate) fn command(app: &mut SheetApp, id: &str, p: &Json) -> Result<Json, St
     if matches!(id, "ui.scribeAnalysis" | "ui.scribeCloseAnalysis") {
         #[cfg(not(target_arch = "wasm32"))]
         if app.developer.job.as_ref().is_some_and(|job| job.doc == uid) {
-            return Err("Stop the current Enki request before switching analysis tools".into());
+            return Err("Stop the current Oqelith request before switching analysis tools".into());
         }
     }
     if id == "ui.scribeCloseAnalysis" {
@@ -220,7 +220,7 @@ pub(crate) fn command(app: &mut SheetApp, id: &str, p: &Json) -> Result<Json, St
                 request.model = p.get("model").and_then(Json::as_str).unwrap_or("").into();
                 request.mode = p.get("mode").and_then(Json::as_str).unwrap_or("Chat and edit").into();
                 if request.prompt.len() > 32 * 1024 || !ENKI_TASKS.contains(&request.mode.as_str()) {
-                    return Err("Invalid Enki request".into());
+                    return Err("Invalid Oqelith request".into());
                 }
                 if request.mode == "Plan"
                     && let Some(model) = p.get("planModel").and_then(Json::as_str).filter(|id| !id.is_empty())
@@ -380,7 +380,7 @@ pub fn show(app: &mut SheetApp, ui: &mut egui::Ui, scribe: bool) {
         }
     }
     ui.separator();
-    crate::icons::enki_label(ui, &draft.status);
+    crate::icons::oqelith_label(ui, &draft.status);
     app.developer.drafts.insert(uid, draft);
 }
 
@@ -414,7 +414,7 @@ fn macro_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool
         draft.reviewed = false;
         draft.preview = None;
     }
-    crate::icons::enki_label(ui, format!("{} · active workbook", draft.language));
+    crate::icons::oqelith_label(ui, format!("{} · active workbook", draft.language));
     ui.weak("Edit a script, preview its changes, then apply them together.");
     ui.weak("Scripts run as your user. File and network access are outside the workbook preview.");
     let changed = ui
@@ -436,7 +436,7 @@ fn macro_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool
     }
     if draft.language == "VBA" {
         ui.horizontal(|ui| {
-            crate::icons::enki_label(ui, "Macro");
+            crate::icons::oqelith_label(ui, "Macro");
             ui.add_enabled(!busy, egui::TextEdit::singleline(&mut draft.macro_name).desired_width(130.0).char_limit(128))
                 .accessible_name("Macro name");
         });
@@ -477,7 +477,7 @@ fn macro_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool
     ui.weak("Script execution requires the desktop app and the selected language runtime.");
     if let Some(preview) = draft.preview.clone() {
         let commands = preview.get("commands").and_then(Json::as_array).cloned().unwrap_or_default();
-        crate::icons::enki_label(ui, format!("{} engine calls in preview", commands.len()));
+        crate::icons::oqelith_label(ui, format!("{} engine calls in preview", commands.len()));
         egui::CollapsingHeader::new("Review changes and reads").show(ui, |ui| {
             for step in commands.iter().take(MAX_STEPS) {
                 ui.monospace(step.to_string());
@@ -537,16 +537,17 @@ fn restore_analysis(app: &mut SheetApp, dialog: &str, setup: &Json) {
 }
 
 fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool) {
+    let t = crate::theme::Tokens::get(ui.ctx());
     ui.horizontal_top(|ui| {
         let (rect, _) = ui.allocate_exact_size(egui::vec2(32.0, 40.0), egui::Sense::hover());
         crate::icons::paint(ui.painter(), rect, crate::icons::Icon::Scribe, ui.visuals().text_color());
         ui.vertical(|ui| {
-            crate::icons::enki_label(ui, "Scribe · Tavru Sheets");
+            crate::icons::oqelith_label(ui, "Scribe · Tavru Sheets");
             ui.weak("Ask a question, highlight cells, create formulas, or draft a macro. Review changes before applying them.");
         });
     });
     #[cfg(not(any(unix, windows)))]
-    crate::icons::enki_label(ui, egui::RichText::new("Local Enki requires the desktop app.").weak());
+    crate::icons::oqelith_label(ui, egui::RichText::new("Local Oqelith requires the desktop app.").weak());
     if let Some((dialog, setup)) = &draft.analysis_setup
         && ui.button("Return to analysis tool…").clicked()
     {
@@ -559,7 +560,7 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
     egui::Frame::new().fill(t.window).corner_radius(8).inner_margin(12).show(ui, |ui| {
         ui.set_width(ui.available_width());
         if text.is_empty() {
-            ui.heading("How can Enki help?");
+            ui.heading("How can Oqelith help?");
             ui.label(egui::RichText::new("Ask about your sheet, plan a change, or draft a formula or script.").color(t.text_dim));
         } else {
             egui::ScrollArea::vertical().id_salt("enki_response").max_height(240.0).show(ui, |ui| {
@@ -570,7 +571,7 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
                         .desired_width(f32::INFINITY)
                         .desired_rows(3),
                 )
-                .accessible_name("Enki response");
+                .accessible_name("Oqelith response");
             });
         }
     });
@@ -580,13 +581,13 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
             let prompt = ui
                 .add(
                     egui::TextEdit::multiline(&mut draft.prompt)
-                        .hint_text("Message Enki…")
+                        .hint_text("Message Oqelith…")
                         .frame(egui::Frame::NONE)
                         .desired_rows(3)
                         .desired_width(f32::INFINITY)
                         .char_limit(8000),
                 )
-                .accessible_name("Enki request");
+                .accessible_name("Oqelith request");
             if prompt.has_focus() {
                 ui.painter().rect_stroke(prompt.rect.expand(2.0), 4, egui::Stroke::new(1.5, t.accent), egui::StrokeKind::Inside);
             }
@@ -600,7 +601,7 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
                         }
                     })
                     .response
-                    .accessible_name("Enki task");
+                    .accessible_name("Oqelith task");
                 change_scribe_mode(draft, &old_mode);
                 #[cfg(not(target_arch = "wasm32"))]
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -613,7 +614,7 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
                             Ok(_) => {
                                 draft.reply.clear();
                                 draft.suggestion = None;
-                                draft.status = "Enki is writing…".into();
+                                draft.status = "Oqelith is writing…".into();
                             }
                             Err(e) => draft.status = e,
                         }
@@ -637,7 +638,7 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
                         }
                     })
                     .response
-                    .accessible_name("Enki planning model");
+                    .accessible_name("Oqelith planning model");
                 if ui.button("Refresh models").clicked() {
                     draft.status = match app.run("ui.scribeModels", json!({})) {
                         Ok(_) => "Looking for planning models…".into(),
@@ -647,7 +648,7 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
             });
         });
         if planner.is_none() {
-            ui.weak("Refresh to look for a Planner configured in Enki.");
+            ui.weak("Refresh to look for a Planner configured in Oqelith.");
         }
     }
     if !busy && !text.is_empty() && ui.button("Copy response").clicked() {
@@ -655,9 +656,9 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
     }
     if let Some(proposal) = draft.suggestion.clone() {
         if let Some(commands) = proposal.get("commands").and_then(Json::as_array) {
-            crate::icons::enki_label(ui, "Proposed worksheet changes");
+            crate::icons::oqelith_label(ui, "Proposed worksheet changes");
             for command in commands {
-                crate::icons::enki_label(ui, scribe::action_label(command));
+                crate::icons::oqelith_label(ui, scribe::action_label(command));
             }
         }
         if proposal.get("commands").is_some() && ui.add_enabled(!busy, egui::Button::new("Apply worksheet changes")).clicked() {
@@ -682,7 +683,7 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
 
 fn memory_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: bool) {
     egui::CollapsingHeader::new("Conversation and shared memory").show(ui, |ui| {
-        crate::icons::enki_label(
+        crate::icons::oqelith_label(
             ui,
             egui::RichText::new(
                 "Saved locally by Oqelith and shared with Scribe in your other apps. Compact keeps a summary; pinned preferences are kept separately.",
@@ -691,25 +692,25 @@ fn memory_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
         );
         if let Some(memory) = &app.developer.memory {
             if !memory.summary.is_empty() {
-                crate::icons::enki_label(ui, "Conversation summary");
-                crate::icons::enki_label(ui, &memory.summary);
+                crate::icons::oqelith_label(ui, "Conversation summary");
+                crate::icons::oqelith_label(ui, &memory.summary);
             }
             egui::ScrollArea::vertical().id_salt("scribe_history").max_height(160.0).show(ui, |ui| {
                 for turn in &memory.turns {
                     ui.strong(format!("You · {}", turn.app));
-                    crate::icons::enki_label(ui, &turn.user);
+                    crate::icons::oqelith_label(ui, &turn.user);
                     ui.strong("Scribe");
-                    crate::icons::enki_label(ui, answer(&turn.assistant));
+                    crate::icons::oqelith_label(ui, answer(&turn.assistant));
                     ui.separator();
                 }
             });
         }
-        crate::icons::enki_label(ui, "Preferences and style to remember");
+        crate::icons::oqelith_label(ui, "Preferences and style to remember");
         ui.add_enabled(
             !busy,
             egui::TextEdit::multiline(&mut app.developer.memory_notes).desired_rows(3).desired_width(f32::INFINITY).char_limit(2000),
         )
-        .accessible_name("Shared Enki preferences");
+        .accessible_name("Shared Oqelith preferences");
         #[cfg(not(target_arch = "wasm32"))]
         ui.horizontal_wrapped(|ui| {
             for (label, id) in [
@@ -732,7 +733,7 @@ fn memory_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
                 }
             }
         });
-        crate::icons::enki_label(ui, &app.developer.memory_status);
+        crate::icons::oqelith_label(ui, &app.developer.memory_status);
     });
 }
 
@@ -851,7 +852,7 @@ fn start_memory(app: &mut SheetApp, id: &str, p: &Json) -> Result<(), String> {
             }
             "ui.scribeMemoryCompact" => {
                 let model = enki::select_text_model(&enki::list_models(&endpoint, "nanshe").map_err(|e| e.to_string())?, "writing")
-                    .ok_or("The local assistant is not ready. Configure text generation in Enki and retry.")?;
+                    .ok_or("The local assistant is not ready. Configure text generation in Oqelith and retry.")?;
                 let memory = enki::memory::get(&endpoint, "nanshe").map_err(|e| e.to_string())?;
                 enki::memory::compact(&endpoint, "nanshe", &model, &memory, &cancel)
             }
@@ -863,7 +864,7 @@ fn start_memory(app: &mut SheetApp, id: &str, p: &Json) -> Result<(), String> {
             }
             _ => return Err("Unknown shared memory action".into()),
         }
-        .map_err(|e| format!("Shared memory: {e}. Enki protocol v3 is required."))?;
+        .map_err(|e| format!("Shared memory: {e}. Oqelith protocol v3 is required."))?;
         tx.send(Event::Memory(result)).map_err(|e| e.to_string())?;
         tx.send(Event::MemoryStatus("Shared memory updated".into())).map_err(|e| e.to_string())
     })
@@ -909,7 +910,7 @@ fn start_scribe(app: &mut SheetApp, draft: &Draft, list: bool) -> Result<(), Str
             }
             Err(_) => {
                 tx.send(Event::MemoryStatus(
-                    "Shared memory unavailable; update Enki to enable it. This request can still run without memory.".into(),
+                    "Shared memory unavailable; update Oqelith to enable it. This request can still run without memory.".into(),
                 ))
                 .map_err(|e| e.to_string())?;
                 None
@@ -918,7 +919,7 @@ fn start_scribe(app: &mut SheetApp, draft: &Draft, list: bool) -> Result<(), Str
         if list {
             return tx.send(Event::Models(enki::list_models(&endpoint, "nanshe").map_err(|e| e.to_string())?)).map_err(|e| e.to_string());
         }
-        let models = enki::list_models(&endpoint, "nanshe").map_err(|_| "The local assistant is unavailable. Check Enki and retry.".to_string())?;
+        let models = enki::list_models(&endpoint, "nanshe").map_err(|_| "The local assistant is unavailable. Check Oqelith and retry.".to_string())?;
         let task = if mode == "Formula" {
             "formula"
         } else if mode.starts_with("Write ") {
@@ -927,11 +928,11 @@ fn start_scribe(app: &mut SheetApp, draft: &Draft, list: bool) -> Result<(), Str
             "writing"
         };
         let model = if model.is_empty() {
-            enki::select_text_model(&models, task).ok_or("The local assistant is not ready. Configure text generation in Enki and retry.")?
+            enki::select_text_model(&models, task).ok_or("The local assistant is not ready. Configure text generation in Oqelith and retry.")?
         } else if models.contains(&model) {
             model
         } else {
-            return Err("The selected model is unavailable in Enki. Refresh models and choose again.".into());
+            return Err("The selected model is unavailable in Oqelith. Refresh models and choose again.".into());
         };
         let messages = scribe_messages(&mode, &prompt, &context, memory.as_ref(), analysis_setup.as_ref());
         let mut reply = String::new();
@@ -956,7 +957,7 @@ fn start_scribe(app: &mut SheetApp, draft: &Draft, list: bool) -> Result<(), Str
         )
         .map_err(|e| e.to_string())?;
         if overflow || summary.reason != "stop" || cancel.load(std::sync::atomic::Ordering::Relaxed) {
-            return Err("Enki stopped before a complete answer; no changes prepared".into());
+            return Err("Oqelith stopped before a complete answer; no changes prepared".into());
         }
         let text = answer(&reply);
         let (shown, suggestion) = match mode.as_str() {
@@ -980,7 +981,7 @@ fn start_scribe(app: &mut SheetApp, draft: &Draft, list: bool) -> Result<(), Str
             match enki::memory::append(&endpoint, "nanshe", &prompt, &remembered) {
                 Ok(memory) => {
                     let _ = tx.send(Event::Memory(memory));
-                    let _ = tx.send(Event::MemoryStatus("Conversation saved across Enki apps".into()));
+                    let _ = tx.send(Event::MemoryStatus("Conversation saved across Oqelith apps".into()));
                 }
                 Err(e) => {
                     let _ = tx.send(Event::MemoryStatus(format!("Reply is ready but history was not saved: {e}")));
@@ -1056,22 +1057,22 @@ mod tests {
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(520.0, 900.0)).build_ui_state(|ui, app| show(app, ui, true), app);
         h.run_steps(2);
         assert!(h.query_by_label("Send").is_some());
-        assert!(h.query_by_label("Enki planning model").is_none());
-        h.get_by_label("Enki task").click();
+        assert!(h.query_by_label("Oqelith planning model").is_none());
+        h.get_by_label("Oqelith task").click();
         h.run_steps(2);
         h.get_by_label("Plan").click();
         h.run_steps(2);
-        h.get_by_label("Enki planning model").click();
+        h.get_by_label("Oqelith planning model").click();
         h.run_steps(2);
         assert!(h.query_by_label("DeepSeek-R1-Distill-Qwen-1.5B").is_none());
         assert!(h.query_by_label("private-coder-instruct").is_none());
         h.get_by_label("Planner").click();
         h.run_steps(2);
-        h.get_by_label("Enki task").click();
+        h.get_by_label("Oqelith task").click();
         h.run_steps(2);
         h.get_by_label("Write Python").click();
         h.run_steps(2);
-        assert!(h.query_by_label("Enki planning model").is_none());
+        assert!(h.query_by_label("Oqelith planning model").is_none());
         assert_eq!(h.state().developer.drafts[&uid].plan_model, "DeepSeek-R1-Distill-Qwen-1.5B");
     }
 
@@ -1120,7 +1121,7 @@ mod tests {
             })
             .build_ui_state(|ui, app| show(app, ui, true), app);
         h.run_steps(2);
-        h.get_by_label("Enki task").click();
+        h.get_by_label("Oqelith task").click();
         h.run_steps(2);
         h.get_by_label("Write Python").click();
         h.run_steps(2);
@@ -1174,7 +1175,7 @@ mod tests {
         let mut app = SheetApp::new(session, Default::default());
         let uid = app.session.doc().unwrap().uid;
         let mut chat = Draft::new(String::new());
-        chat.prompt = "My ordinary Enki request".into();
+        chat.prompt = "My ordinary Oqelith request".into();
         chat.mode = "Formula".into();
         app.developer.drafts.insert(uid, chat);
         command(&mut app, "ui.scribeAnalysis", &json!({"tool":"whatIf","setup":{"to":"42"}})).unwrap();
@@ -1187,7 +1188,7 @@ mod tests {
         assert_eq!(app.dialog.as_ref().unwrap().values["to"], "42");
         command(&mut app, "ui.scribeCloseAnalysis", &json!({})).unwrap();
         assert!(app.developer.drafts[&uid].analysis_setup.is_none());
-        assert_eq!(app.developer.drafts[&uid].prompt, "My ordinary Enki request");
+        assert_eq!(app.developer.drafts[&uid].prompt, "My ordinary Oqelith request");
         assert_eq!(app.developer.drafts[&uid].mode, "Formula");
         command(&mut app, "ui.scribeAnalysis", &json!({"tool":"whatIf"})).unwrap();
         assert_eq!(app.developer.drafts[&uid].prompt, "My unfinished what-if question");
@@ -1233,7 +1234,7 @@ mod tests {
                     app,
                 );
             h.run_steps(2);
-            h.get_by_label("Ask Enki for help…").click();
+            h.get_by_label("Ask Oqelith for help…").click();
             h.run_steps(2);
             assert!(h.state().dialog.is_none());
             h.get_by_label("Return to analysis tool…").click();
@@ -1293,14 +1294,14 @@ mod tests {
     }
     #[cfg(not(target_arch = "wasm32"))]
     #[test]
-    #[ignore = "requires local Enki with the registered nanshe-smoke model"]
+    #[ignore = "requires local Oqelith with the registered nanshe-smoke model"]
     #[allow(clippy::disallowed_methods)]
     fn live_enki_scribe_streams_without_changing_the_workbook() {
         fn wait(app: &mut SheetApp, context: &egui::Context) {
             let deadline = std::time::Instant::now() + std::time::Duration::from_secs(120);
             while app.developer.job.is_some() {
                 tick(app, context);
-                assert!(std::time::Instant::now() < deadline, "Enki did not finish");
+                assert!(std::time::Instant::now() < deadline, "Oqelith did not finish");
                 std::thread::sleep(std::time::Duration::from_millis(10));
             }
         }
@@ -1321,7 +1322,7 @@ mod tests {
         assert!(!answer(&draft.reply).is_empty());
         assert!(draft.suggestion.as_ref().is_some_and(Json::is_null));
         assert_eq!(app.session.doc().unwrap().revision, revision);
-        eprintln!("live Enki reply: {}", answer(&draft.reply));
+        eprintln!("live Oqelith reply: {}", answer(&draft.reply));
         command(&mut app, "ui.scribeAsk", &json!({"model":"nanshe-smoke","mode":"Write Python","prompt":"Write a very long script."})).unwrap();
         command(&mut app, "ui.developerStop", &json!({})).unwrap();
         wait(&mut app, &context);
@@ -1331,7 +1332,7 @@ mod tests {
     }
     #[cfg(not(target_arch = "wasm32"))]
     #[test]
-    #[ignore = "requires an isolated live Enki daemon and NANSHE_ENKI_PLAN_GGUF / NANSHE_ENKI_CODE_GGUF"]
+    #[ignore = "requires an isolated live Oqelith daemon and NANSHE_ENKI_PLAN_GGUF / NANSHE_ENKI_CODE_GGUF"]
     fn live_enki_plan_picker_and_coding_use_separate_models() {
         use egui_kittest::kittest::Queryable as _;
         const PLAN: &str = "DeepSeek-R1-Distill-Qwen-1.5B";
@@ -1359,18 +1360,18 @@ mod tests {
                 h.run_steps(2);
                 while h.state().developer.job.is_some() {
                     h.run_steps(1);
-                    assert!(std::time::Instant::now() < deadline, "Enki did not finish");
+                    assert!(std::time::Instant::now() < deadline, "Oqelith did not finish");
                     std::thread::sleep(std::time::Duration::from_millis(20));
                 }
             }};
         }
-        h.get_by_label("Enki task").click();
+        h.get_by_label("Oqelith task").click();
         h.run_steps(2);
         h.get_by_label("Plan").click();
         h.run_steps(2);
         h.get_by_label("Refresh models").click();
         wait_for_enki!();
-        h.get_by_label("Enki planning model").click();
+        h.get_by_label("Oqelith planning model").click();
         h.run_steps(2);
         h.get_by_label("Planner").click();
         h.run_steps(2);
@@ -1385,11 +1386,11 @@ mod tests {
         assert!(draft.suggestion.as_ref().is_some_and(Json::is_null));
         eprintln!("Plan reply: {}", draft.reply);
         assert_eq!(nanshe_enki::select_text_model(&draft.models, "code").as_deref(), Some(CODE));
-        h.get_by_label("Enki task").click();
+        h.get_by_label("Oqelith task").click();
         h.run_steps(2);
         h.get_by_label("Write Python").click();
         h.run_steps(2);
-        assert!(h.query_by_label("Enki planning model").is_none());
+        assert!(h.query_by_label("Oqelith planning model").is_none());
         h.state_mut().developer.drafts.get_mut(&uid).unwrap().prompt = "Write one line of Python that prints 42.".into();
         h.run_steps(2);
         h.get_by_label("Send").click();
@@ -1407,7 +1408,7 @@ mod tests {
     #[test]
     fn disabled_pane_fields_keep_pending_typing_out_of_cells() {
         use egui_kittest::kittest::Queryable as _;
-        for (pane, label) in [("scribe", "Enki request"), ("developer", "Code Editor")] {
+        for (pane, label) in [("scribe", "Oqelith request"), ("developer", "Code Editor")] {
             let mut session = nanshe_engine::Session::new();
             session.new_workbook();
             let mut app = SheetApp::new(session, Default::default());

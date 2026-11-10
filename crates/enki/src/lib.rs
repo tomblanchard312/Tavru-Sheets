@@ -109,16 +109,16 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::NoEndpoint => write!(f, "no model service socket (SHAREDAI_SOCKET or XDG_RUNTIME_DIR)"),
-            Self::Unsupported => write!(f, "Enki isn't available on this platform"),
+            Self::Unsupported => write!(f, "Oqelith isn't available on this platform"),
             Self::Io(e) if e.kind() == std::io::ErrorKind::NotFound || e.kind() == std::io::ErrorKind::ConnectionRefused => {
-                write!(f, "Enki isn't running ({e})")
+                write!(f, "Oqelith isn't running ({e})")
             }
-            Self::Io(e) => write!(f, "Enki connection: {e}"),
-            Self::Protocol(m) => write!(f, "Enki sent an unexpected reply: {m}"),
-            Self::Incompatible => write!(f, "This Enki daemon has no local inference; update it"),
-            Self::Busy { retry_after } => write!(f, "Enki is busy; try again in {} s", retry_after.as_secs().max(1)),
-            Self::Inference { kind, message } => write!(f, "Enki ({kind}): {message}"),
-            Self::Timeout => write!(f, "Enki stopped responding"),
+            Self::Io(e) => write!(f, "Oqelith connection: {e}"),
+            Self::Protocol(m) => write!(f, "Oqelith sent an unexpected reply: {m}"),
+            Self::Incompatible => write!(f, "This Oqelith daemon has no local inference; update it"),
+            Self::Busy { retry_after } => write!(f, "Oqelith is busy; try again in {} s", retry_after.as_secs().max(1)),
+            Self::Inference { kind, message } => write!(f, "Oqelith ({kind}): {message}"),
+            Self::Timeout => write!(f, "Oqelith stopped responding"),
             Self::Cancelled => write!(f, "Stopped"),
             Self::Invalid(m) => write!(f, "{m}"),
             Self::NotInstalled => write!(f, "sharedai-daemon isn't installed"),

@@ -10,7 +10,7 @@
 
 > **Scribe update: 2026-10-29** · What-If Analysis has an Ask Scribe entry; Forecast Sheet, Goal Seek and Data Analysis dialogs offer contextual Scribe help. Requests use selected worksheet data and current tool settings, remain editable before Send, and return to the tool with settings retained. Scribe explains configuration; native tools perform calculations after confirmation. Native Linux validation; other native platforms remain unverified. Readiness estimates unchanged.
 
-> **Integration update: 2026-10-29** · Combined local product branding, Enki and file-picker changes with the synchronized upstream code. Existing settings and installation identities are retained. Readiness estimates are unchanged.
+> **Integration update: 2026-10-29** · Combined local product branding, Oqelith and file-picker changes with the synchronized upstream code. Existing settings and installation identities are retained. Readiness estimates are unchanged.
 
 > **Naming update: 2026-10-29** · Nanshe is now Tavru Sheets. Existing user data, installation identities and automation interfaces are retained; readiness estimates are unchanged.
 
@@ -320,5 +320,5 @@ Ranked; estimates in Opus 5.5 agent-hours. Detail and the full beta-gate list in
 ## Tavru Sheets fork · 2026-10-28
 
 Developer source editor with VBA, Python and R preview/apply; Excel-style VBA object model;
-Scribe via local Enki. See [scope and platform limits](docs/nanshe-developer.md). Native Windows
-Enki transport and platform GUI acceptance remain pending.
+Scribe via local Oqelith. See [scope and platform limits](docs/nanshe-developer.md). Native Windows
+Oqelith transport and platform GUI acceptance remain pending.

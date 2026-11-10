@@ -1,10 +1,10 @@
-/// Registered IDs are the only model metadata exposed by Enki's list API.
+/// Registered IDs are the only model metadata exposed by Oqelith's list API.
 pub fn is_deepseek_r1(id: &str) -> bool {
     id.to_ascii_lowercase().replace('_', "-").contains("deepseek-r1")
 }
 
-/// Select an installed Enki text model for a task without exposing model details in the UI.
-/// shortcut: until Enki advertises task capabilities, rank registered text model families.
+/// Select an installed Oqelith text model for a task without exposing model details in the UI.
+/// shortcut: until Oqelith advertises task capabilities, rank registered text model families.
 pub fn select_text_model(models: &[String], task: &str) -> Option<String> {
     models
         .iter()

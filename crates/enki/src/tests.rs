@@ -192,9 +192,9 @@ fn oversized_newline_terminated_frames_are_rejected() {
     assert!(matches!(reader.next_frame(), Err(Error::Protocol(_))));
 }
 
-/// Opt-in real daemon/worker check; the caller supplies an isolated running Enki and GGUF.
+/// Opt-in real daemon/worker check; the caller supplies an isolated running Oqelith and GGUF.
 #[test]
-#[ignore = "requires local Enki and NANSHE_ENKI_TEST_MODEL"]
+#[ignore = "requires local Oqelith and NANSHE_ENKI_TEST_MODEL"]
 fn live_enki_registers_streams_and_cancels() {
     let path = std::env::var_os("NANSHE_ENKI_TEST_MODEL").expect("set NANSHE_ENKI_TEST_MODEL");
     let endpoint = endpoint("").unwrap();
@@ -209,7 +209,7 @@ fn live_enki_registers_streams_and_cancels() {
     assert!(!reply.trim().is_empty());
     assert!(result.prompt_tokens > 0 && result.completion_tokens > 0);
     assert_eq!(result.reason, "stop", "{reply}");
-    eprintln!("live Enki: {result:?}; reply: {reply}");
+    eprintln!("live Oqelith: {result:?}; reply: {reply}");
     let cancel = AtomicBool::new(false);
     let result = chat(&endpoint, "nanshe-live-test", "nanshe-smoke", &messages, &params, Timeouts::default(), &cancel, |_| {
         cancel.store(true, Ordering::Relaxed);

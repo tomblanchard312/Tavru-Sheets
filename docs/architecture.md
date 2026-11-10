@@ -172,5 +172,5 @@ source storage and bounded grouped replay, and thin Developer/Scribe panes in th
 egui frontend. VBA (.NET), Python and R run in separate local processes using private JSON
 lines; each command operates on a copied `Session` until the user applies a preview. The
 original workbook UID and revision are checked before replay. UI drafts join Save/Close.
-Scribe uses Enki locally; it proposes formulas or script source without running code.
+Scribe uses Oqelith locally; it proposes formulas or script source without running code.
 See [setup, comparison and platform limits](nanshe-developer.md).

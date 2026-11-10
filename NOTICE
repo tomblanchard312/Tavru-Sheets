@@ -1,6 +1,6 @@
 Nanshe
 A fork of GridCraft; Nisaba-derived and Nanshe changes copyright (c) 2026 Tom Blanchard.
-VBA transpiler/compiler and Enki client derived from Nisaba (https://github.com/tomblanchard312/Nisaba), MIT OR Apache-2.0.
+VBA transpiler/compiler and Oqelith client derived from Nisaba (https://github.com/tomblanchard312/Nisaba), MIT OR Apache-2.0.
 
 GridCraft
 Copyright (c) 2026 ArtCraft Team and the GridCraft contributors.
@@ -1992,7 +1992,7 @@ Complete native distributions include a self-contained .NET runtime and Roslyn c
 Their versioned licence and third-party notice files are preserved under runtimes/vba/notices;
 the runtime manifest records the target and bundled component paths.
 
-Enki shared SDK (client, protocol and speech controls)
+Oqelith shared SDK (client, protocol and speech controls)
 
 MIT License
 
