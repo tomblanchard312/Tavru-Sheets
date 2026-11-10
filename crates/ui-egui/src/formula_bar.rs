@@ -225,7 +225,7 @@ fn name_box(app: &mut SheetApp, ui: &mut egui::Ui, t: &Tokens) -> Rect {
                     app.run("formulas.defineName", json!({"name": target}))
                 };
                 if let Err(e) = r {
-                    app.message = Some(("CellTrellis".into(), crate::clean_error(&e)));
+                    app.message = Some(("Tavru Sheets".into(), crate::clean_error(&e)));
                 }
                 app.grid.ensure_visible = true;
             }

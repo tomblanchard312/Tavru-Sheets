@@ -373,7 +373,8 @@ pub fn status_bar(app: &mut SheetApp, ui: &mut Ui) {
                     // Zoom percentage and slider.
                     let zoom = app.session.active().and_then(|d| d.wb.active().map(|s| s.zoom)).unwrap_or(100);
                     let zl = ui.add(
-                        egui::Label::new(egui::RichText::new(format!("{zoom}%")).font(theme::ui_font(12.5)).color(t.text_dim)).sense(Sense::click()),
+                        egui::Label::new(egui::RichText::new(format!("{zoom}%")).font(theme::numeric_font(12.5)).color(t.text_dim))
+                            .sense(Sense::click()),
                     );
                     if zl.clicked() {
                         app.open_dialog("zoom", json!({}));

@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=CellTrellis
+Name=Tavru Sheets
 GenericName=Spreadsheet
 Comment=Calculate, analyse and chart data in workbooks
 Exec=nanshe %F

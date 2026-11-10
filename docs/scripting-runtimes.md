@@ -23,7 +23,7 @@ self-contained prebuilt VBA directory with matching `runtime-info.json`, supplie
 `NANSHE_VBA_RUNTIME_DIR`. The stager fails rather than publishing a partial package. macOS
 JIT entitlements apply to the helper, not the GUI.
 
-CellTrellis also needs Python 3 and R with jsonlite. Debian/RPM packages declare these system
+Tavru Sheets also needs Python 3 and R with jsonlite. Debian/RPM packages declare these system
 dependencies. A local install uses `--scripts system --check-system` to verify them. Windows,
 macOS, FreeBSD and portable Linux packages use `--scripts bundle` and require
 `NANSHE_SCRIPT_RUNTIME_DIR` containing tested, relocatable `python/` and `R/` distributions.

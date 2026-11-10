@@ -240,7 +240,7 @@ pub(super) fn translate(text: &str) -> Option<&'static str> {
         "Command\nPalette" => "Bảng\nlệnh",
         "Agent\nControl" => "Điều khiển\nagent",
         "Action\nJournal" => "Nhật ký\nthao tác",
-        "About\nCellTrellis" => "Giới thiệu\nCellTrellis",
+        "About\nTavru Sheets" => "Giới thiệu\nTavru Sheets",
         "Share" => "Chia sẻ",
         "Add Chart\nElement" => "Thêm thành phần\nbiểu đồ",
         "Change\nChart Type" => "Đổi kiểu\nbiểu đồ",

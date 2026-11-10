@@ -14,7 +14,7 @@
 pub mod memory;
 
 mod selection;
-pub use selection::select_text_model;
+pub use selection::{is_deepseek_r1, select_text_model};
 
 use std::fmt;
 use std::path::PathBuf;

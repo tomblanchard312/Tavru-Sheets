@@ -3,7 +3,7 @@ name = "nanshe-formula"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "CellTrellis formula language: lexer, parser, printer and reference adjustment"
+description = "Tavru Sheets formula language: lexer, parser, printer and reference adjustment"
 
 [lints]
 workspace = true

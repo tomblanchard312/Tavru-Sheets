@@ -173,7 +173,7 @@ pub fn show(app: &mut SheetApp, ctx: &egui::Context) {
                 _ => None,
             };
             if let Some(tool) = help {
-                if ui.button("Ask Scribe for help…").on_hover_text("Use the selected cells and these settings to prepare a question. Review it in Scribe and press Send.").clicked() {
+                if ui.button("Ask Enki for help…").on_hover_text("Use the selected cells and these settings to prepare a question. Review it in Enki and press Send.").clicked() {
                     match app.run("ui.scribeAnalysis", json!({"tool":tool,"dialog":d.name,"setup":d.values})) {
                         Ok(_) => open = false,
                         Err(e) => app.toast = Some((e, ui.input(|i| i.time))),
@@ -204,7 +204,7 @@ pub fn show(app: &mut SheetApp, ctx: &egui::Context) {
                 "solverResults" => solver_results(app, ui, &mut d, &mut open),
                 "spelling" => spelling(app, ui, &mut d, &mut open),
                 "agents" => {
-                    ui.label("CellTrellis is fully drivable by agents. Every menu item, button and gesture is a command:");
+                    ui.label("Tavru Sheets is fully drivable by agents. Every menu item, button and gesture is a command:");
                     ui.add_space(4.0);
                     ui.monospace("nanshe --control 7979        # JSON-lines control channel\nnanshe-cli mcp --connect 7979   # MCP bridged to this window\nnanshe-cli mcp                   # headless MCP server");
                     ui.add_space(4.0);
@@ -465,7 +465,7 @@ pub(super) fn ok_cancel(ui: &mut egui::Ui, confirm: &mut bool, open: &mut bool) 
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             let lang = crate::i18n::current(ui.ctx());
             let t = crate::theme::Tokens::get(ui.ctx());
-            let ok = ui.add(egui::Button::new(egui::RichText::new(format!("   {}   ", lang.tr("OK"))).color(t.on_accent)).fill(t.accent));
+            let ok = ui.add(egui::Button::new(egui::RichText::new(format!("   {}   ", lang.tr("OK"))).color(t.on_primary)).fill(t.primary));
             if ok.clicked() || ui.input(|i| i.key_pressed(Key::Enter)) {
                 *confirm = true;
             }

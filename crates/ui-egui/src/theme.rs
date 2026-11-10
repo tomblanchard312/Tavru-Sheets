@@ -1,7 +1,7 @@
 //! Design tokens and fonts.
 //!
-//! Colours are our own, tuned to read like a modern desktop spreadsheet. Fonts come from egui's
-//! bundled faces and the operating system at runtime: the UI uses the platform UI font, cells use
+//! Chrome uses Eridu Design System colours. Fonts come from egui's
+//! bundled faces and the operating system at runtime: the UI prefers Eridu typography, cells use
 //! the best available match for the workbook font (Calibri/Carlito/Aptos/Arial…), and egui's
 //! bundled Ubuntu/Hack/egui-icons and monochrome emoji faces are the last resort. A build with
 //! `CRAFT_FONTS_DIR` also embeds the permitted OFL craft-fonts faces (barred Adobe/Source/Noto CJK
@@ -28,9 +28,9 @@ pub use font_fallback::symbol_face_installed;
 use font_fallback::{cjk_han_japanese, cjk_han_simplified, cjk_hangul, fallback_faces, hebrew, lao, symbols_more, thai};
 use font_setup::pick;
 pub use font_setup::{
-    CELL, CELL_BOLD, CELL_BOLD_ITALIC, CELL_ITALIC, CraftFont, HanOrder, MONO, SERIF, UI, UI_BOLD, available_text, cell_family, cell_text_width,
-    chinese_font_loaded, craft_font_scripts, craft_fonts_cover, craft_fonts_loaded, craft_fonts_required, font_definitions,
-    font_definitions_for_language, font_definitions_with, pinned_font_definitions, symbol_fallback, ui_bold, ui_font,
+    CELL, CELL_BOLD, CELL_BOLD_ITALIC, CELL_ITALIC, CODE, CraftFont, DISPLAY, HanOrder, MONO, SERIF, UI, UI_BOLD, available_text, cell_family,
+    cell_text_width, chinese_font_loaded, craft_font_scripts, craft_fonts_cover, craft_fonts_loaded, craft_fonts_required, font_definitions,
+    font_definitions_for_language, font_definitions_with, numeric_font, pinned_font_definitions, symbol_fallback, ui_bold, ui_font,
 };
 #[cfg(test)]
 use font_setup::{candidates, craft_font_faces, try_load};
@@ -84,6 +84,10 @@ pub struct Tokens {
     pub notice_info_border: Color32,
     /// Text and glyphs drawn on an `accent` fill (primary buttons, switched-on toggles).
     pub on_accent: Color32,
+    pub primary: Color32,
+    pub on_primary: Color32,
+    pub chrome: Color32,
+    pub on_chrome: Color32,
     /// The category palette, indexed by [`Cat`]: the coloured parts of icons, gallery highlights.
     pub cat: [Color32; 8],
     /// The page colour inside icons (documents, cells, clipboards).
@@ -175,42 +179,42 @@ impl Tokens {
         Tokens::palette(true)
     }
 
-    /// One palette for both modes: each colour is written once, with its light and dark values.
+    /// Maps EriduOS design-system/tokens/colors.json to the spreadsheet chrome.
     fn palette(dark: bool) -> Tokens {
         Tokens {
             dark,
-            window: pick(dark, Color32::from_rgb(0xF3, 0xF3, 0xF3), Color32::from_rgb(0x29, 0x29, 0x29)),
-            ribbon: pick(dark, Color32::from_rgb(0xFF, 0xFF, 0xFF), Color32::from_rgb(0x33, 0x33, 0x33)),
-            ribbon_border: pick(dark, Color32::from_rgb(0xE3, 0xE3, 0xE3), Color32::from_rgb(0x40, 0x40, 0x40)),
-            text: pick(dark, Color32::from_rgb(0x24, 0x24, 0x24), Color32::from_rgb(0xEE, 0xEE, 0xEE)),
-            text_dim: pick(dark, Color32::from_rgb(0x61, 0x61, 0x61), Color32::from_rgb(0xB0, 0xB0, 0xB0)),
+            window: pick(dark, rgb(0xFAF9F6), rgb(0x17232B)),
+            ribbon: pick(dark, rgb(0xFFFFFF), rgb(0x202C33)),
+            ribbon_border: pick(dark, rgb(0xC7CDD0), rgb(0x71818A)),
+            text: pick(dark, rgb(0x202C33), rgb(0xF7F7F4)),
+            text_dim: pick(dark, rgb(0x475962), rgb(0xD0D9DE)),
             text_disabled: pick(dark, Color32::from_rgb(0xB0, 0xB0, 0xB0), Color32::from_rgb(0x70, 0x70, 0x70)),
-            accent: pick(dark, Color32::from_rgb(0x15, 0x60, 0xB0), Color32::from_rgb(0x70, 0xB5, 0xFF)),
-            accent_dark: pick(dark, Color32::from_rgb(0x0B, 0x5E, 0x31), Color32::from_rgb(0x3F, 0xA8, 0x6C)),
-            accent_soft: pick(dark, Color32::from_rgb(0xDF, 0xF1, 0xE6), Color32::from_rgb(0x23, 0x45, 0x31)),
-            hover: pick(dark, Color32::from_rgb(0xEB, 0xEB, 0xEB), Color32::from_rgb(0x42, 0x42, 0x42)),
-            pressed: pick(dark, Color32::from_rgb(0xDD, 0xDD, 0xDD), Color32::from_rgb(0x4D, 0x4D, 0x4D)),
-            separator: pick(dark, Color32::from_rgb(0xE0, 0xE0, 0xE0), Color32::from_rgb(0x48, 0x48, 0x48)),
+            accent: pick(dark, rgb(0x246B83), rgb(0x83C9E0)),
+            accent_dark: pick(dark, rgb(0x202C33), rgb(0xF7F7F4)),
+            accent_soft: pick(dark, rgb(0xE3EEF1), rgb(0x30505F)),
+            hover: pick(dark, rgb(0xEEF3F4), rgb(0x253740)),
+            pressed: pick(dark, rgb(0xE3EEF1), rgb(0x30505F)),
+            separator: pick(dark, rgb(0xC7CDD0), rgb(0x71818A)),
             grid_bg: Color32::WHITE,
-            desk: pick(dark, Color32::from_rgb(0xDE, 0xDE, 0xDE), Color32::from_rgb(0x3A, 0x3A, 0x3A)),
+            desk: pick(dark, rgb(0xF1EEE8), rgb(0x293A43)),
             gridline: Color32::from_rgb(0xE1, 0xE1, 0xE1),
-            header_bg: pick(dark, Color32::from_rgb(0xF8, 0xF8, 0xF8), Color32::from_rgb(0x30, 0x30, 0x30)),
-            header_text: pick(dark, Color32::from_rgb(0x42, 0x42, 0x42), Color32::from_rgb(0xCC, 0xCC, 0xCC)),
-            header_line: pick(dark, Color32::from_rgb(0xD6, 0xD6, 0xD6), Color32::from_rgb(0x45, 0x45, 0x45)),
-            header_sel_bg: pick(dark, Color32::from_rgb(0xE1, 0xE1, 0xE1), Color32::from_rgb(0x45, 0x45, 0x45)),
-            header_sel_text: pick(dark, Color32::from_rgb(0x0B, 0x5E, 0x31), Color32::from_rgb(0x6F, 0xD3, 0x9A)),
-            header_all_bg: pick(dark, Color32::from_rgb(0xC8, 0xE6, 0xD3), Color32::from_rgb(0x2E, 0x55, 0x3E)),
-            sel_fill: pick(dark, Color32::from_rgba_unmultiplied(0x10, 0x7C, 0x41, 0x1C), Color32::from_rgba_unmultiplied(0x10, 0x7C, 0x41, 0x24)),
-            sel_border: Color32::from_rgb(0x10, 0x7C, 0x41),
-            input_bg: pick(dark, Color32::WHITE, Color32::from_rgb(0x1F, 0x1F, 0x1F)),
-            input_border: pick(dark, Color32::from_rgb(0xD1, 0xD1, 0xD1), Color32::from_rgb(0x50, 0x50, 0x50)),
-            tab_bar: pick(dark, Color32::from_rgb(0xF3, 0xF3, 0xF3), Color32::from_rgb(0x29, 0x29, 0x29)),
-            tab_active: pick(dark, Color32::WHITE, Color32::from_rgb(0x3A, 0x3A, 0x3A)),
-            status_bar: pick(dark, Color32::from_rgb(0xF3, 0xF3, 0xF3), Color32::from_rgb(0x29, 0x29, 0x29)),
+            header_bg: pick(dark, rgb(0xF1EEE8), rgb(0x293A43)),
+            header_text: pick(dark, rgb(0x475962), rgb(0xD0D9DE)),
+            header_line: pick(dark, rgb(0xC7CDD0), rgb(0x71818A)),
+            header_sel_bg: pick(dark, rgb(0xE3EEF1), rgb(0x30505F)),
+            header_sel_text: pick(dark, rgb(0x202C33), rgb(0xF7F7F4)),
+            header_all_bg: pick(dark, rgb(0xE3EEF1), rgb(0x30505F)),
+            sel_fill: pick(dark, Color32::from_rgba_unmultiplied(0x24, 0x6B, 0x83, 0x1C), Color32::from_rgba_unmultiplied(0x24, 0x6B, 0x83, 0x24)),
+            sel_border: rgb(0x246B83),
+            input_bg: pick(dark, rgb(0xFFFFFF), rgb(0x202C33)),
+            input_border: pick(dark, rgb(0xC7CDD0), rgb(0x71818A)),
+            tab_bar: pick(dark, rgb(0xFAF9F6), rgb(0x17232B)),
+            tab_active: pick(dark, rgb(0xFFFFFF), rgb(0x202C33)),
+            status_bar: pick(dark, rgb(0xFAF9F6), rgb(0x17232B)),
             cell_text: Color32::BLACK,
-            menu_bg: pick(dark, Color32::WHITE, Color32::from_rgb(0x30, 0x30, 0x30)),
+            menu_bg: pick(dark, rgb(0xFFFFFF), rgb(0x202C33)),
             shadow: pick(dark, Color32::from_black_alpha(40), Color32::from_black_alpha(90)),
-            danger: pick(dark, Color32::from_rgb(0xC4, 0x2B, 0x1C), Color32::from_rgb(0xFF, 0x95, 0x85)),
+            danger: pick(dark, rgb(0xA32929), rgb(0xFF9D99)),
             error_check_green: pick(dark, Color32::from_rgb(0x1E, 0x8E, 0x3E), Color32::from_rgb(0x4C, 0xC2, 0x6B)),
             warning_fill: Color32::from_rgb(0xF2, 0xB7, 0x05),
             warning_ink: Color32::BLACK,
@@ -218,7 +222,11 @@ impl Tokens {
             notice_warn_border: pick(dark, Color32::from_rgb(0xF0, 0xC3, 0x6E), Color32::from_rgb(0x7A, 0x67, 0x30)),
             notice_info_bg: pick(dark, Color32::from_rgb(0xEA, 0xF2, 0xFB), Color32::from_rgb(0x24, 0x33, 0x44)),
             notice_info_border: pick(dark, Color32::from_rgb(0xB9, 0xD2, 0xEC), Color32::from_rgb(0x3B, 0x55, 0x72)),
-            on_accent: pick(dark, Color32::WHITE, rgb(0x0A2038)),
+            on_accent: pick(dark, rgb(0xFFFFFF), rgb(0x10232D)),
+            primary: pick(dark, rgb(0x94592C), rgb(0xE0A472)),
+            on_primary: pick(dark, rgb(0xFFFFFF), rgb(0x10232D)),
+            chrome: pick(dark, rgb(0x173B4D), rgb(0x10232D)),
+            on_chrome: pick(dark, rgb(0xE9DFCE), rgb(0xE9DFCE)),
             cat: pick(
                 dark,
                 [rgb(0x2F6FCF), rgb(0x1E8A4C), rgb(0xC8601A), rgb(0xC8372D), rgb(0x8350C8), rgb(0x13808A), rgb(0x9C6C00), rgb(0x5A6B7D)],
@@ -278,7 +286,7 @@ pub fn contrast(a: Color32, b: Color32) -> f32 {
     (la.max(lb) + 0.05) / (la.min(lb) + 0.05)
 }
 
-/// Installs light and dark token visuals in both theme slots, keeps the 2-3 px widget and 8-10 px window/menu corner radii from 0.36, and sets spacing, text styles and the active theme.
+/// Installs the chrome palette, spacing and type scale in both theme slots.
 pub fn apply(ctx: &egui::Context, dark: bool) {
     // Install both palettes before System can switch between the style slots.
     for theme in [egui::Theme::Light, egui::Theme::Dark] {
@@ -297,13 +305,12 @@ pub fn apply(ctx: &egui::Context, dark: bool) {
         v.widgets.hovered.weak_bg_fill = t.hover;
         v.widgets.active.weak_bg_fill = t.pressed;
         v.widgets.inactive.bg_stroke = Stroke::new(1.0, t.input_border);
-        // 0.37 raises the default widget corner radii; CellTrellis keeps its 0.36 shape (#8617).
-        v.widgets.noninteractive.corner_radius = egui::CornerRadius::same(2);
-        v.widgets.inactive.corner_radius = egui::CornerRadius::same(2);
-        v.widgets.hovered.corner_radius = egui::CornerRadius::same(3);
-        v.widgets.active.corner_radius = egui::CornerRadius::same(2);
-        v.widgets.open.corner_radius = egui::CornerRadius::same(2);
-        v.window_corner_radius = egui::CornerRadius::same(10);
+        v.widgets.noninteractive.corner_radius = egui::CornerRadius::same(4);
+        v.widgets.inactive.corner_radius = egui::CornerRadius::same(4);
+        v.widgets.hovered.corner_radius = egui::CornerRadius::same(4);
+        v.widgets.active.corner_radius = egui::CornerRadius::same(4);
+        v.widgets.open.corner_radius = egui::CornerRadius::same(4);
+        v.window_corner_radius = egui::CornerRadius::same(12);
         v.menu_corner_radius = egui::CornerRadius::same(8);
         v.popup_shadow = egui::epaint::Shadow { offset: [0, 4], blur: 16, spread: 0, color: t.shadow };
         ctx.set_visuals_of(theme, v);
@@ -311,14 +318,14 @@ pub fn apply(ctx: &egui::Context, dark: bool) {
     ctx.options_mut(|o| o.fallback_theme = egui::Theme::Light);
     ctx.set_theme(if dark { egui::Theme::Dark } else { egui::Theme::Light });
     ctx.all_styles_mut(|s| {
-        s.spacing.item_spacing = egui::vec2(6.0, 4.0);
-        s.spacing.button_padding = egui::vec2(6.0, 3.0);
-        s.spacing.interact_size.y = 22.0;
-        s.text_styles.insert(egui::TextStyle::Body, ui_font(13.0));
+        s.spacing.item_spacing = egui::vec2(8.0, 4.0);
+        s.spacing.button_padding = egui::vec2(8.0, 4.0);
+        s.spacing.interact_size.y = 24.0;
+        s.text_styles.insert(egui::TextStyle::Body, ui_font(14.0));
         s.text_styles.insert(egui::TextStyle::Button, ui_font(13.0));
-        s.text_styles.insert(egui::TextStyle::Small, ui_font(11.0));
-        s.text_styles.insert(egui::TextStyle::Heading, ui_bold(18.0));
-        s.text_styles.insert(egui::TextStyle::Monospace, FontId::new(12.0, FontFamily::Name(MONO.into())));
+        s.text_styles.insert(egui::TextStyle::Small, ui_font(12.0));
+        s.text_styles.insert(egui::TextStyle::Heading, ui_bold(20.0));
+        s.text_styles.insert(egui::TextStyle::Monospace, FontId::new(12.0, FontFamily::Name(CODE.into())));
     });
 }
 
@@ -365,6 +372,9 @@ mod contrast_tests {
         }
         add("icon stroke on paper", t.text, t.paper, GLYPH);
         add("on_accent on accent", t.on_accent, t.accent, TEXT);
+        add("primary action", t.on_primary, t.primary, TEXT);
+        add("navigation text", t.on_chrome, t.chrome, TEXT);
+        add("chart header", t.accent_dark, t.accent_soft, TEXT);
         add("warning glyph", t.on_warning, t.warning, TEXT);
         add("notice text (warning)", t.text, t.notice_warn_bg, TEXT);
         add("notice text (info)", t.text, t.notice_info_bg, TEXT);

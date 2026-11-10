@@ -1,4 +1,4 @@
-# CellTrellis MCP server
+# Tavru Sheets MCP server
 
 `nanshe-cli mcp` exposes CellTrellis to AI agents over the [Model Context Protocol](https://modelcontextprotocol.io):
 newline-delimited JSON-RPC 2.0 on stdin/stdout (protocol `2025-06-18`; `2025-03-26` and `2024-11-05` clients are

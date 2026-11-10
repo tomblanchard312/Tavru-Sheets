@@ -204,7 +204,7 @@ fn color(s: &Syntax, token: Token) -> egui::Color32 {
 
 /// The code editor's font: the monospace face at 12.5 px.
 pub fn font() -> FontId {
-    FontId::new(12.5, FontFamily::Name(theme::MONO.into()))
+    FontId::new(12.5, FontFamily::Name(theme::CODE.into()))
 }
 
 /// A layout job for `text` with syntax colours.

@@ -256,7 +256,7 @@ pub fn write_xlsx_named(wb: &Workbook, kind: XlsxKind, book_name: Option<&str>) 
 
     let mut w = format!("{XML_DECL}<workbook xmlns=\"{NS_MAIN}\" xmlns:r=\"{NS_REL}\">");
     // A workbook read from a file keeps its <fileVersion> as it was: Excel trusts the saved values
-    // only when appName is "xl" (#799). One without names CellTrellis (#1699), and Excel recalculates it.
+    // only when appName is "xl" (#799). One without names Tavru Sheets (#1699), and Excel recalculates it.
     let file_version = crate::passthrough::workbook_elements(wb, "fileVersion");
     w.push_str(if file_version.is_empty() { "<fileVersion appName=\"nanshe\"/>" } else { &file_version });
     w.push_str("<workbookPr");

@@ -1,4 +1,4 @@
-//! The CellTrellis document model: workbooks, sheets, a copy-on-write cell store, interned
+//! The Tavru Sheets document model: workbooks, sheets, a copy-on-write cell store, interned
 //! styles, defined names, tables, conditional formats, validation, comments, charts and print
 //! settings. Pure data; calculation lives in `nanshe-calc`.
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]

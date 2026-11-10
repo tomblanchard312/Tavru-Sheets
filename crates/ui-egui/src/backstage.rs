@@ -12,7 +12,7 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
 
-use egui::{Align2, Color32, Key, Modifiers, Rect, RichText, Sense, Stroke, StrokeKind, Ui, pos2, vec2};
+use egui::{Align2, Color32, FontFamily, FontId, Key, Modifiers, Rect, RichText, Sense, Stroke, StrokeKind, Ui, pos2, vec2};
 use serde_json::{Value as Json, json};
 
 use crate::SheetApp;
@@ -164,18 +164,17 @@ pub fn show(app: &mut SheetApp, ui: &mut Ui) {
     let t = Tokens::get(&ctx);
     let lang = app.ui.language;
     let mut out = Outcome::default();
-    let (nav_bg, nav_text, nav_sel) =
-        if t.dark { (t.accent_soft, t.text, Color32::from_white_alpha(30)) } else { (t.accent, Color32::WHITE, Color32::from_black_alpha(46)) };
+    let (nav_bg, nav_text, nav_sel) = (t.chrome, t.on_chrome, Color32::from_white_alpha(24));
     egui::Panel::left("backstage_nav")
         .exact_size(NAV_W)
         .resizable(false)
-        .frame(egui::Frame::NONE.fill(nav_bg).inner_margin(egui::Margin { left: 0, right: 0, top: 10, bottom: 10 }))
+        .frame(egui::Frame::NONE.fill(nav_bg).inner_margin(egui::Margin { left: 0, right: 0, top: 12, bottom: 12 }))
         .show(ui, |ui| {
             ui.spacing_mut().item_spacing.y = 0.0;
             if nav_item(ui, Icon::Back, lang.tr("Back"), false, nav_text, nav_sel).clicked() {
                 out.close = true;
             }
-            ui.add_space(10.0);
+            ui.add_space(12.0);
             for page in [Page::Home, Page::New, Page::Open] {
                 if nav_item(ui, page.icon(), lang.tr(page.label()), bs.page == page, nav_text, nav_sel).clicked() {
                     out.page = Some(page);
@@ -211,10 +210,10 @@ pub fn show(app: &mut SheetApp, ui: &mut Ui) {
         });
     egui::CentralPanel::default().frame(egui::Frame::NONE.fill(t.ribbon)).show(ui, |ui| {
         egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
-            egui::Frame::NONE.inner_margin(egui::Margin { left: 44, right: 32, top: 26, bottom: 32 }).show(ui, |ui| {
+            egui::Frame::NONE.inner_margin(egui::Margin { left: 40, right: 32, top: 24, bottom: 32 }).show(ui, |ui| {
                 ui.set_max_width(CONTENT_W);
-                ui.label(RichText::new(lang.tr(bs.page.label())).font(theme::ui_font(28.0)).color(t.text));
-                ui.add_space(18.0);
+                ui.label(RichText::new(lang.tr(bs.page.label())).font(FontId::new(28.0, FontFamily::Name(theme::DISPLAY.into()))).color(t.text));
+                ui.add_space(16.0);
                 match bs.page {
                     Page::Home => home(app, ui, &mut bs, &mut out),
                     Page::New => new_page(app, ui, &mut out),
@@ -266,7 +265,7 @@ fn save(app: &mut SheetApp, out: &mut Outcome) {
 
 /// Allocates and paints one Backstage navigation row: selected or hover fill, icon, label and button semantics. Returns the row's click response.
 fn nav_item(ui: &mut Ui, icon: Icon, label: &str, selected: bool, text: Color32, sel: Color32) -> egui::Response {
-    let (rect, resp) = ui.allocate_exact_size(vec2(NAV_W, 38.0), Sense::click());
+    let (rect, resp) = ui.allocate_exact_size(vec2(NAV_W, 40.0), Sense::click());
     resp.widget_info(|| egui::WidgetInfo::selected(egui::Role::Button, true, selected, label));
     let p = ui.painter();
     if selected {
@@ -274,6 +273,9 @@ fn nav_item(ui: &mut Ui, icon: Icon, label: &str, selected: bool, text: Color32,
         p.rect_filled(Rect::from_min_size(rect.min, vec2(4.0, rect.height())), 0.0, text);
     } else if resp.hovered() {
         p.rect_filled(rect, 0.0, sel.gamma_multiply(0.55));
+    }
+    if resp.has_focus() {
+        p.rect_stroke(rect.shrink(2.0), 4.0, Stroke::new(2.0, text), StrokeKind::Inside);
     }
     icons::paint(p, Rect::from_center_size(pos2(rect.left() + 30.0, rect.center().y), vec2(17.0, 17.0)), icon, text);
     p.text(pos2(rect.left() + 50.0, rect.center().y), Align2::LEFT_CENTER, label, theme::ui_font(14.0), text);
@@ -290,8 +292,8 @@ fn nav_separator(ui: &mut Ui, text: Color32) {
 
 fn section(ui: &mut Ui, lang: Language, title: &str) {
     let t = Tokens::get(ui.ctx());
-    ui.add_space(6.0);
-    ui.label(RichText::new(lang.tr(title)).font(theme::ui_bold(15.0)).color(t.text));
+    ui.add_space(8.0);
+    ui.label(RichText::new(lang.tr(title)).font(theme::ui_bold(20.0)).color(t.text));
     ui.add_space(8.0);
 }
 
@@ -412,7 +414,7 @@ fn recent_list(app: &mut SheetApp, ui: &mut Ui, bs: &mut Backstage, out: &mut Ou
                 Some(Modified::Unknown) => (lang.tr("Not available").to_string(), t.text_disabled),
                 None => (String::new(), t.text_dim),
             };
-            p.text(pos2(rect.right() - modified_w, rect.center().y), Align2::LEFT_CENTER, words, theme::ui_font(12.0), color);
+            p.text(pos2(rect.right() - modified_w, rect.center().y), Align2::LEFT_CENTER, words, theme::numeric_font(12.0), color);
         }
         let resp = resp.on_hover_text(&path);
         if resp.clicked() {
@@ -750,13 +752,13 @@ pub fn export_as(app: &mut SheetApp, fmt: &str) -> bool {
         return match app.run(id, json!({"path": path})) {
             Ok(_) => true,
             Err(e) => {
-                app.message = Some(("CellTrellis".into(), crate::clean_error(&e)));
+                app.message = Some(("Tavru Sheets".into(), crate::clean_error(&e)));
                 false
             }
         };
     }
     if app.services.download.is_none() {
-        app.message = Some(("CellTrellis".into(), "Exporting needs a file picker, which this window doesn't have.".into()));
+        app.message = Some(("Tavru Sheets".into(), "Exporting needs a file picker, which this window doesn't have.".into()));
         return false;
     }
     if fmt == "pdf" {
@@ -764,7 +766,7 @@ pub fn export_as(app: &mut SheetApp, fmt: &str) -> bool {
         return match app.run(id, json!({})) {
             Ok(_) => true,
             Err(e) => {
-                app.message = Some(("CellTrellis".into(), crate::clean_error(&e)));
+                app.message = Some(("Tavru Sheets".into(), crate::clean_error(&e)));
                 false
             }
         };
@@ -783,7 +785,7 @@ pub fn export_as(app: &mut SheetApp, fmt: &str) -> bool {
             }
         }
         Err(e) => {
-            app.message = Some(("CellTrellis".into(), crate::clean_error(&e)));
+            app.message = Some(("Tavru Sheets".into(), crate::clean_error(&e)));
             false
         }
     }
@@ -794,7 +796,7 @@ fn account(app: &mut SheetApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     let lang = app.ui.language;
     section(ui, lang, "Product Information");
-    ui.label(RichText::new("CellTrellis").font(theme::ui_bold(16.0)).color(t.text));
+    ui.label(RichText::new("Tavru Sheets").font(theme::ui_bold(16.0)).color(t.text));
     ui.add_space(8.0);
     egui::Grid::new("backstage_account").num_columns(2).spacing(vec2(18.0, 8.0)).show(ui, |ui| {
         for (label, value) in
@@ -807,13 +809,13 @@ fn account(app: &mut SheetApp, ui: &mut Ui) {
     });
     ui.add_space(18.0);
     ui.horizontal(|ui| {
-        if square_button(ui, Icon::Info, lang.tr("About CellTrellis")).clicked() {
+        if square_button(ui, Icon::Info, lang.tr("About Tavru Sheets")).clicked() {
             app.open_dialog("about", json!({}));
         }
         ui.add_space(12.0);
         ui.vertical(|ui| {
             ui.add_space(14.0);
-            ui.label(RichText::new(lang.tr("About CellTrellis")).font(theme::ui_bold(13.5)).color(t.text));
+            ui.label(RichText::new(lang.tr("About Tavru Sheets")).font(theme::ui_bold(13.5)).color(t.text));
             dim(ui, lang.tr("Version, contributors and the AI models that helped"));
         });
     });
