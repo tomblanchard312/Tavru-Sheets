@@ -1,4 +1,4 @@
-//! Developer and Scribe panes; edits stay in a preview until explicitly applied.
+//! Developer and Enki panes; edits stay in a preview until explicitly applied.
 use std::collections::{HashMap, HashSet};
 
 use nanshe_engine::cmd::developer::{MAX_SOURCE, MAX_STEPS};
@@ -10,7 +10,9 @@ use crate::{SheetApp, code_editor::Lang};
 mod runtime;
 mod scribe;
 
-const SAMPLE: &str = "Sub Main()\n    Range(\"A1\").Value = \"Hello from CellTrellis\"\n    Range(\"A1\").Font.Bold = True\nEnd Sub\n";
+const ENKI_TASKS: &[&str] = &["Chat and edit", "Plan", "Formula", "Explain selection", "Write VBA", "Write Python", "Write R"];
+
+const SAMPLE: &str = "Sub Main()\n    Range(\"A1\").Value = \"Hello from Tavru Sheets\"\n    Range(\"A1\").Font.Bold = True\nEnd Sub\n";
 
 #[derive(Default)]
 pub struct State {
@@ -40,6 +42,7 @@ struct Draft {
     analysis_drafts: HashMap<String, (String, String, Json)>,
     chat_draft: Option<(String, String)>,
     models: Vec<String>,
+    plan_model: String,
     model: String,
 }
 
@@ -63,6 +66,7 @@ impl Draft {
             analysis_drafts: HashMap::new(),
             chat_draft: None,
             models: vec![],
+            plan_model: String::new(),
             model: String::new(),
         }
     }
@@ -123,7 +127,7 @@ pub(crate) fn command(app: &mut SheetApp, id: &str, p: &Json) -> Result<Json, St
     if matches!(id, "ui.scribeAnalysis" | "ui.scribeCloseAnalysis") {
         #[cfg(not(target_arch = "wasm32"))]
         if app.developer.job.as_ref().is_some_and(|job| job.doc == uid) {
-            return Err("Stop the current Scribe request before switching analysis tools".into());
+            return Err("Stop the current Enki request before switching analysis tools".into());
         }
     }
     if id == "ui.scribeCloseAnalysis" {
@@ -215,10 +219,16 @@ pub(crate) fn command(app: &mut SheetApp, id: &str, p: &Json) -> Result<Json, St
                 request.prompt = p.get("prompt").and_then(Json::as_str).unwrap_or("").into();
                 request.model = p.get("model").and_then(Json::as_str).unwrap_or("").into();
                 request.mode = p.get("mode").and_then(Json::as_str).unwrap_or("Chat and edit").into();
-                if request.prompt.len() > 32 * 1024
-                    || !["Chat and edit", "Formula", "Explain selection", "Write VBA", "Write Python", "Write R"].contains(&request.mode.as_str())
+                if request.prompt.len() > 32 * 1024 || !ENKI_TASKS.contains(&request.mode.as_str()) {
+                    return Err("Invalid Enki request".into());
+                }
+                if request.mode == "Plan"
+                    && let Some(model) = p.get("planModel").and_then(Json::as_str).filter(|id| !id.is_empty())
                 {
-                    return Err("Invalid Scribe request".into());
+                    if !nanshe_enki::is_deepseek_r1(model) {
+                        return Err("Choose a registered planning model".into());
+                    }
+                    request.model = model.into();
                 }
                 if id == "ui.scribeAsk" && request.prompt.trim().is_empty() {
                     return Err("Enter a request".into());
@@ -296,17 +306,8 @@ pub fn tick(app: &mut SheetApp, ctx: &egui::Context) {
                                 }
                                 Event::MemoryStatus(status) => app.developer.memory_status = status,
                                 Event::Models(models) => {
-                                    if !models.contains(&draft.model) {
-                                        draft.model = models
-                                            .iter()
-                                            .find(|model| {
-                                                let name = model.to_ascii_lowercase();
-                                                ["instruct", "chat"].iter().any(|word| name.contains(word))
-                                                    && !["embed", "rerank", "vision", "mmproj"].iter().any(|word| name.contains(word))
-                                            })
-                                            .or_else(|| models.first())
-                                            .cloned()
-                                            .unwrap_or_default();
+                                    if !models.contains(&draft.plan_model) {
+                                        draft.plan_model.clear();
                                     }
                                     draft.models = models;
                                 }
@@ -540,7 +541,7 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
         let (rect, _) = ui.allocate_exact_size(egui::vec2(32.0, 40.0), egui::Sense::hover());
         crate::icons::paint(ui.painter(), rect, crate::icons::Icon::Scribe, ui.visuals().text_color());
         ui.vertical(|ui| {
-            crate::icons::enki_label(ui, "Scribe · CellTrellis");
+            crate::icons::enki_label(ui, "Scribe · Tavru Sheets");
             ui.weak("Ask a question, highlight cells, create formulas, or draft a macro. Review changes before applying them.");
         });
     });
@@ -554,44 +555,101 @@ fn scribe_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
     if draft.analysis_setup.is_some() && ui.add_enabled(!busy, egui::Button::new("Close analysis help")).clicked() {
         close_analysis(draft);
     }
-    ui.add_enabled_ui(!busy, |ui| {
-        let old_mode = draft.mode.clone();
-        craft_ui::ComboBox::from_id_salt("scribe_mode")
-            .selected_text(&draft.mode)
-            .show_ui(ui, |ui| {
-                for mode in ["Chat and edit", "Formula", "Explain selection", "Write VBA", "Write Python", "Write R"] {
-                    ui.selectable_value(&mut draft.mode, mode.into(), mode);
-                }
-            })
-            .response
-            .accessible_name("Scribe task");
-        change_scribe_mode(draft, &old_mode);
-        ui.add(
-            egui::TextEdit::multiline(&mut draft.prompt)
-                .hint_text("Describe what you need…")
-                .desired_rows(3)
-                .desired_width(f32::INFINITY)
-                .char_limit(8000),
-        )
-        .accessible_name("Scribe request");
-    });
-    #[cfg(not(target_arch = "wasm32"))]
-    ui.horizontal(|ui| {
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            if ui.add_enabled(!busy && cfg!(any(unix, windows)) && !draft.prompt.trim().is_empty(), egui::Button::new("Send")).clicked() {
-                draft.reply.clear();
-                draft.suggestion = None;
-                match app.run("ui.scribeAsk", json!({"prompt":draft.prompt,"mode":draft.mode,"analysisSetup":draft.analysis_setup})) {
-                    Ok(_) => draft.status = "Scribe is writing…".into(),
-                    Err(e) => draft.status = e,
-                }
-            }
+    let text = answer(&draft.reply);
+    egui::Frame::new().fill(t.window).corner_radius(8).inner_margin(12).show(ui, |ui| {
+        ui.set_width(ui.available_width());
+        if text.is_empty() {
+            ui.heading("How can Enki help?");
+            ui.label(egui::RichText::new("Ask about your sheet, plan a change, or draft a formula or script.").color(t.text_dim));
+        } else {
+            egui::ScrollArea::vertical().id_salt("enki_response").max_height(240.0).show(ui, |ui| {
+                ui.add(
+                    egui::TextEdit::multiline(&mut text.as_str())
+                        .interactive(false)
+                        .frame(egui::Frame::NONE)
+                        .desired_width(f32::INFINITY)
+                        .desired_rows(3),
+                )
+                .accessible_name("Enki response");
+            });
         }
     });
-    let text = answer(&draft.reply);
-    ui.add(egui::TextEdit::multiline(&mut text.as_str()).interactive(false).desired_width(f32::INFINITY).desired_rows(8))
-        .accessible_name("Scribe response");
+    ui.add_space(8.0);
+    egui::Frame::new().fill(t.input_bg).stroke(egui::Stroke::new(1.0, t.input_border)).corner_radius(8).inner_margin(8).show(ui, |ui| {
+        ui.add_enabled_ui(!busy, |ui| {
+            let prompt = ui
+                .add(
+                    egui::TextEdit::multiline(&mut draft.prompt)
+                        .hint_text("Message Enki…")
+                        .frame(egui::Frame::NONE)
+                        .desired_rows(3)
+                        .desired_width(f32::INFINITY)
+                        .char_limit(8000),
+                )
+                .accessible_name("Enki request");
+            if prompt.has_focus() {
+                ui.painter().rect_stroke(prompt.rect.expand(2.0), 4, egui::Stroke::new(1.5, t.accent), egui::StrokeKind::Inside);
+            }
+            ui.horizontal_wrapped(|ui| {
+                let old_mode = draft.mode.clone();
+                craft_ui::ComboBox::from_id_salt("scribe_mode")
+                    .selected_text(&draft.mode)
+                    .show_ui(ui, |ui| {
+                        for &mode in ENKI_TASKS {
+                            ui.selectable_value(&mut draft.mode, mode.into(), mode);
+                        }
+                    })
+                    .response
+                    .accessible_name("Enki task");
+                change_scribe_mode(draft, &old_mode);
+                #[cfg(not(target_arch = "wasm32"))]
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    let send = egui::Button::new(egui::RichText::new("Send").color(t.on_accent)).fill(t.accent);
+                    if ui.add_enabled(!draft.prompt.trim().is_empty(), send).clicked() {
+                        match app.run(
+                            "ui.scribeAsk",
+                            json!({"prompt":draft.prompt,"mode":draft.mode,"analysisSetup":draft.analysis_setup,"planModel":draft.plan_model}),
+                        ) {
+                            Ok(_) => {
+                                draft.reply.clear();
+                                draft.suggestion = None;
+                                draft.status = "Enki is writing…".into();
+                            }
+                            Err(e) => draft.status = e,
+                        }
+                    }
+                });
+            });
+        });
+    });
+    #[cfg(not(target_arch = "wasm32"))]
+    if draft.mode == "Plan" {
+        let planner = draft.models.iter().filter(|id| nanshe_enki::is_deepseek_r1(id)).min();
+        ui.add_enabled_ui(!busy, |ui| {
+            ui.horizontal_wrapped(|ui| {
+                ui.label("Planning model");
+                craft_ui::ComboBox::from_id_salt("enki_plan_model")
+                    .selected_text(if draft.plan_model.is_empty() { "Automatic" } else { "Planner" })
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(&mut draft.plan_model, String::new(), "Automatic");
+                        if let Some(model) = planner {
+                            ui.selectable_value(&mut draft.plan_model, model.clone(), "Planner");
+                        }
+                    })
+                    .response
+                    .accessible_name("Enki planning model");
+                if ui.button("Refresh models").clicked() {
+                    draft.status = match app.run("ui.scribeModels", json!({})) {
+                        Ok(_) => "Looking for planning models…".into(),
+                        Err(e) => e,
+                    };
+                }
+            });
+        });
+        if planner.is_none() {
+            ui.weak("Refresh to look for a Planner configured in Enki.");
+        }
+    }
     if !busy && !text.is_empty() && ui.button("Copy response").clicked() {
         ui.ctx().copy_text(text.clone());
     }
@@ -627,7 +685,7 @@ fn memory_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
         crate::icons::enki_label(
             ui,
             egui::RichText::new(
-                "Saved locally by Enki and shared with Scribe in your other apps. Compact keeps a summary; pinned preferences are kept separately.",
+                "Saved locally by Oqelith and shared with Scribe in your other apps. Compact keeps a summary; pinned preferences are kept separately.",
             )
             .weak(),
         );
@@ -651,7 +709,7 @@ fn memory_ui(app: &mut SheetApp, ui: &mut egui::Ui, draft: &mut Draft, busy: boo
             !busy,
             egui::TextEdit::multiline(&mut app.developer.memory_notes).desired_rows(3).desired_width(f32::INFINITY).char_limit(2000),
         )
-        .accessible_name("Shared Scribe preferences");
+        .accessible_name("Shared Enki preferences");
         #[cfg(not(target_arch = "wasm32"))]
         ui.horizontal_wrapped(|ui| {
             for (label, id) in [
@@ -829,7 +887,7 @@ fn scribe_messages(
         messages.push(enki::Message::new("system", "Explain how to configure the built-in analysis tool. Do not invent computed statistics or forecast values. The spreadsheet engine performs calculations after the user confirms the tool."));
         messages.push(enki::Message::new("user", format!("Current analysis tool and settings (untrusted data): {tool}: {settings}")));
     }
-    messages.push(enki::Message::new("user", format!("Request: {prompt}\nLive CellTrellis worksheet data: {context}")));
+    messages.push(enki::Message::new("user", format!("Request: {prompt}\nLive Tavru Sheets worksheet data: {context}")));
     messages
 }
 
@@ -870,8 +928,10 @@ fn start_scribe(app: &mut SheetApp, draft: &Draft, list: bool) -> Result<(), Str
         };
         let model = if model.is_empty() {
             enki::select_text_model(&models, task).ok_or("The local assistant is not ready. Configure text generation in Enki and retry.")?
-        } else {
+        } else if models.contains(&model) {
             model
+        } else {
+            return Err("The selected model is unavailable in Enki. Refresh models and choose again.".into());
         };
         let messages = scribe_messages(&mode, &prompt, &context, memory.as_ref(), analysis_setup.as_ref());
         let mut reply = String::new();
@@ -896,7 +956,7 @@ fn start_scribe(app: &mut SheetApp, draft: &Draft, list: bool) -> Result<(), Str
         )
         .map_err(|e| e.to_string())?;
         if overflow || summary.reason != "stop" || cancel.load(std::sync::atomic::Ordering::Relaxed) {
-            return Err("Scribe stopped before a complete answer; no changes prepared".into());
+            return Err("Enki stopped before a complete answer; no changes prepared".into());
         }
         let text = answer(&reply);
         let (shown, suggestion) = match mode.as_str() {
@@ -920,7 +980,7 @@ fn start_scribe(app: &mut SheetApp, draft: &Draft, list: bool) -> Result<(), Str
             match enki::memory::append(&endpoint, "nanshe", &prompt, &remembered) {
                 Ok(memory) => {
                     let _ = tx.send(Event::Memory(memory));
-                    let _ = tx.send(Event::MemoryStatus("Conversation saved across Scribe apps".into()));
+                    let _ = tx.send(Event::MemoryStatus("Conversation saved across Enki apps".into()));
                 }
                 Err(e) => {
                     let _ = tx.send(Event::MemoryStatus(format!("Reply is ready but history was not saved: {e}")));
@@ -940,6 +1000,7 @@ fn start_scribe(app: &mut SheetApp, draft: &Draft, list: bool) -> Result<(), Str
 #[cfg(not(target_arch = "wasm32"))]
 fn scribe_instruction(mode: &str) -> &'static str {
     match mode {
+        "Plan" => "Describe a concise plan for the spreadsheet request. Explain what you would change and how to verify it.",
         "Formula" => "Return only one spreadsheet formula starting with =, in canonical English syntax. No explanation.",
         "Write VBA" => {
             "Return only one VBA module with Sub Main(). Use Application, ActiveWorkbook, Worksheets, Range, Cells, Value, Formula, Font. No files, shell, network, or auto-run events."
@@ -983,22 +1044,35 @@ mod tests {
     }
 
     #[test]
-    fn scribe_keeps_model_selection_out_of_the_pane() {
+    fn enki_shows_only_deepseek_models_and_only_in_plan_mode() {
         use egui_kittest::kittest::Queryable;
         let mut session = nanshe_engine::Session::new();
         session.new_workbook();
         let mut app = SheetApp::new(session, Default::default());
         let uid = app.session.doc().unwrap().uid;
         let mut draft = Draft::new(String::new());
-        draft.model = "private-model-name".into();
-        draft.models = vec![draft.model.clone()];
+        draft.models = vec!["private-coder-instruct".into(), "DeepSeek-R1-Distill-Qwen-1.5B".into()];
         app.developer.drafts.insert(uid, draft);
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(520.0, 900.0)).build_ui_state(|ui, app| show(app, ui, true), app);
         h.run_steps(2);
         assert!(h.query_by_label("Send").is_some());
-        for label in ["Model settings", "Scribe model", "private-model-name", "Refresh models"] {
-            assert!(h.query_by_label(label).is_none(), "model control visible: {label}");
-        }
+        assert!(h.query_by_label("Enki planning model").is_none());
+        h.get_by_label("Enki task").click();
+        h.run_steps(2);
+        h.get_by_label("Plan").click();
+        h.run_steps(2);
+        h.get_by_label("Enki planning model").click();
+        h.run_steps(2);
+        assert!(h.query_by_label("DeepSeek-R1-Distill-Qwen-1.5B").is_none());
+        assert!(h.query_by_label("private-coder-instruct").is_none());
+        h.get_by_label("Planner").click();
+        h.run_steps(2);
+        h.get_by_label("Enki task").click();
+        h.run_steps(2);
+        h.get_by_label("Write Python").click();
+        h.run_steps(2);
+        assert!(h.query_by_label("Enki planning model").is_none());
+        assert_eq!(h.state().developer.drafts[&uid].plan_model, "DeepSeek-R1-Distill-Qwen-1.5B");
     }
 
     #[test]
@@ -1046,7 +1120,7 @@ mod tests {
             })
             .build_ui_state(|ui, app| show(app, ui, true), app);
         h.run_steps(2);
-        h.get_by_label("Scribe task").click();
+        h.get_by_label("Enki task").click();
         h.run_steps(2);
         h.get_by_label("Write Python").click();
         h.run_steps(2);
@@ -1083,7 +1157,7 @@ mod tests {
     #[cfg(not(target_arch = "wasm32"))]
     fn code_requests_never_receive_the_analysis_explanation_instruction() {
         let setup = ("goalSeek".into(), json!({"to":"42"}));
-        for mode in ["Write Python", "Write VBA", "Write R", "Formula", "Chat and edit", "Explain selection"] {
+        for &mode in ENKI_TASKS {
             let messages = scribe_messages(mode, "My current request", &json!({}), None, Some(&setup));
             assert_eq!(
                 messages.iter().any(|m| m.content.contains("Explain how to configure the built-in analysis tool")),
@@ -1100,7 +1174,7 @@ mod tests {
         let mut app = SheetApp::new(session, Default::default());
         let uid = app.session.doc().unwrap().uid;
         let mut chat = Draft::new(String::new());
-        chat.prompt = "My ordinary Scribe request".into();
+        chat.prompt = "My ordinary Enki request".into();
         chat.mode = "Formula".into();
         app.developer.drafts.insert(uid, chat);
         command(&mut app, "ui.scribeAnalysis", &json!({"tool":"whatIf","setup":{"to":"42"}})).unwrap();
@@ -1113,7 +1187,7 @@ mod tests {
         assert_eq!(app.dialog.as_ref().unwrap().values["to"], "42");
         command(&mut app, "ui.scribeCloseAnalysis", &json!({})).unwrap();
         assert!(app.developer.drafts[&uid].analysis_setup.is_none());
-        assert_eq!(app.developer.drafts[&uid].prompt, "My ordinary Scribe request");
+        assert_eq!(app.developer.drafts[&uid].prompt, "My ordinary Enki request");
         assert_eq!(app.developer.drafts[&uid].mode, "Formula");
         command(&mut app, "ui.scribeAnalysis", &json!({"tool":"whatIf"})).unwrap();
         assert_eq!(app.developer.drafts[&uid].prompt, "My unfinished what-if question");
@@ -1159,7 +1233,7 @@ mod tests {
                     app,
                 );
             h.run_steps(2);
-            h.get_by_label("Ask Scribe for help…").click();
+            h.get_by_label("Ask Enki for help…").click();
             h.run_steps(2);
             assert!(h.state().dialog.is_none());
             h.get_by_label("Return to analysis tool…").click();
@@ -1226,7 +1300,7 @@ mod tests {
             let deadline = std::time::Instant::now() + std::time::Duration::from_secs(120);
             while app.developer.job.is_some() {
                 tick(app, context);
-                assert!(std::time::Instant::now() < deadline, "Scribe did not finish");
+                assert!(std::time::Instant::now() < deadline, "Enki did not finish");
                 std::thread::sleep(std::time::Duration::from_millis(10));
             }
         }
@@ -1247,7 +1321,7 @@ mod tests {
         assert!(!answer(&draft.reply).is_empty());
         assert!(draft.suggestion.as_ref().is_some_and(Json::is_null));
         assert_eq!(app.session.doc().unwrap().revision, revision);
-        eprintln!("live Scribe reply: {}", answer(&draft.reply));
+        eprintln!("live Enki reply: {}", answer(&draft.reply));
         command(&mut app, "ui.scribeAsk", &json!({"model":"nanshe-smoke","mode":"Write Python","prompt":"Write a very long script."})).unwrap();
         command(&mut app, "ui.developerStop", &json!({})).unwrap();
         wait(&mut app, &context);
@@ -1257,9 +1331,83 @@ mod tests {
     }
     #[cfg(not(target_arch = "wasm32"))]
     #[test]
+    #[ignore = "requires an isolated live Enki daemon and NANSHE_ENKI_PLAN_GGUF / NANSHE_ENKI_CODE_GGUF"]
+    fn live_enki_plan_picker_and_coding_use_separate_models() {
+        use egui_kittest::kittest::Queryable as _;
+        const PLAN: &str = "DeepSeek-R1-Distill-Qwen-1.5B";
+        const CODE: &str = "qwen2.5-coder-1.5b-instruct";
+        let endpoint = nanshe_enki::endpoint("").unwrap();
+        for (var, id) in [("NANSHE_ENKI_PLAN_GGUF", PLAN), ("NANSHE_ENKI_CODE_GGUF", CODE)] {
+            let path = std::path::PathBuf::from(std::env::var_os(var).unwrap());
+            nanshe_enki::register_file(&endpoint, "nanshe", id, &path).unwrap();
+        }
+        let mut session = nanshe_engine::Session::new();
+        session.new_workbook();
+        let app = SheetApp::new(session, Default::default());
+        let doc = app.session.doc().unwrap();
+        let (uid, revision) = (doc.uid, doc.revision);
+        let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(520.0, 900.0)).build_ui_state(
+            |ui, app| {
+                tick(app, ui.ctx());
+                show(app, ui, true);
+            },
+            app,
+        );
+        macro_rules! wait_for_enki {
+            () => {{
+                let deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
+                h.run_steps(2);
+                while h.state().developer.job.is_some() {
+                    h.run_steps(1);
+                    assert!(std::time::Instant::now() < deadline, "Enki did not finish");
+                    std::thread::sleep(std::time::Duration::from_millis(20));
+                }
+            }};
+        }
+        h.get_by_label("Enki task").click();
+        h.run_steps(2);
+        h.get_by_label("Plan").click();
+        h.run_steps(2);
+        h.get_by_label("Refresh models").click();
+        wait_for_enki!();
+        h.get_by_label("Enki planning model").click();
+        h.run_steps(2);
+        h.get_by_label("Planner").click();
+        h.run_steps(2);
+        assert_eq!(h.state().developer.drafts[&uid].plan_model, PLAN);
+        h.state_mut().developer.drafts.get_mut(&uid).unwrap().prompt = "In one short sentence, plan how to total A1:A3 in A4.".into();
+        h.run_steps(2);
+        h.get_by_label("Send").click();
+        wait_for_enki!();
+        let draft = &h.state().developer.drafts[&uid];
+        assert_eq!(draft.status, "Ready for review", "{}", draft.reply);
+        assert!(draft.reply.contains("SUM"), "{}", draft.reply);
+        assert!(draft.suggestion.as_ref().is_some_and(Json::is_null));
+        eprintln!("Plan reply: {}", draft.reply);
+        assert_eq!(nanshe_enki::select_text_model(&draft.models, "code").as_deref(), Some(CODE));
+        h.get_by_label("Enki task").click();
+        h.run_steps(2);
+        h.get_by_label("Write Python").click();
+        h.run_steps(2);
+        assert!(h.query_by_label("Enki planning model").is_none());
+        h.state_mut().developer.drafts.get_mut(&uid).unwrap().prompt = "Write one line of Python that prints 42.".into();
+        h.run_steps(2);
+        h.get_by_label("Send").click();
+        wait_for_enki!();
+        let draft = &h.state().developer.drafts[&uid];
+        assert_eq!(draft.status, "Ready for review", "{}", draft.reply);
+        let suggestion = draft.suggestion.as_ref().unwrap();
+        assert_eq!(suggestion["language"], "Python");
+        assert!(suggestion["source"].as_str().unwrap().contains("print(42)"), "{suggestion}");
+        assert_eq!(h.state().session.doc().unwrap().revision, revision);
+        eprintln!("Coding draft: {}", suggestion["source"]);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
     fn disabled_pane_fields_keep_pending_typing_out_of_cells() {
         use egui_kittest::kittest::Queryable as _;
-        for (pane, label) in [("scribe", "Scribe request"), ("developer", "Code Editor")] {
+        for (pane, label) in [("scribe", "Enki request"), ("developer", "Code Editor")] {
             let mut session = nanshe_engine::Session::new();
             session.new_workbook();
             let mut app = SheetApp::new(session, Default::default());

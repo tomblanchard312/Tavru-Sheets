@@ -1,8 +1,14 @@
+/// Registered IDs are the only model metadata exposed by Enki's list API.
+pub fn is_deepseek_r1(id: &str) -> bool {
+    id.to_ascii_lowercase().replace('_', "-").contains("deepseek-r1")
+}
+
 /// Select an installed Enki text model for a task without exposing model details in the UI.
 /// shortcut: until Enki advertises task capabilities, rank registered text model families.
 pub fn select_text_model(models: &[String], task: &str) -> Option<String> {
     models
         .iter()
+        .filter(|id| !is_deepseek_r1(id))
         .filter_map(|id| {
             let name = id.to_ascii_lowercase();
             if ["embed", "rerank", "bge-", "mmproj", "whisper", "clip", "vae", "flux", "image", "diffusion", "sd-turbo", "sdxl", "stable-"]
@@ -44,6 +50,7 @@ mod task_selection_tests {
             "flux-2",
             "z-image-turbo",
             "qwen-coder-instruct",
+            "DeepSeek-R1-Distill-Qwen-1.5B",
             "microsoft_Phi-4-mini-instruct",
             "qwen2.5-0.5b-instruct",
         ]
@@ -51,6 +58,7 @@ mod task_selection_tests {
         assert_eq!(select_text_model(&models, "writing").as_deref(), Some("microsoft_Phi-4-mini-instruct"));
         assert_eq!(select_text_model(&models, "code").as_deref(), Some("qwen-coder-instruct"));
         assert_eq!(select_text_model(&models, "formula").as_deref(), Some("qwen-coder-instruct"));
-        assert!(select_text_model(&["qwen-image".into(), "bge-small".into()], "writing").is_none());
+        assert!(select_text_model(&["qwen-image".into(), "bge-small".into(), "deepseek_r1".into()], "writing").is_none());
+        assert!(select_text_model(&["deepseek-r1".into()], "code").is_none());
     }
 }

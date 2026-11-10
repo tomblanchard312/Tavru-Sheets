@@ -919,7 +919,7 @@ impl Dialog {
             "commandSearch" => Dialog::custom("commandSearch", "Search Commands", json!({})),
             "agents" => Dialog::custom("agents", "Agent Control", json!({})),
             "about" => {
-                let mut d = Dialog::custom("about", "About CellTrellis", json!({}));
+                let mut d = Dialog::custom("about", "About Tavru Sheets", json!({}));
                 d.tab = match p("tab").as_str() {
                     Some(t @ ("Contributors" | "Models")) => t.to_string(),
                     _ => "About".into(),
@@ -1023,7 +1023,7 @@ impl Dialog {
                 "Save Changes?",
                 json!({"title": p("title"), "quit": p("quit"), "template":p("template"), "doc":p("doc")}),
             ),
-            "start" => Dialog::custom("start", "CellTrellis", json!({})),
+            "start" => Dialog::custom("start", "Tavru Sheets", json!({})),
             "comments" => {
                 app.grid.pane = None;
                 app.run_or_alert("review.showComments", json!({"on": true}));

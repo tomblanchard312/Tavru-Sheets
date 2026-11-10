@@ -25,10 +25,14 @@ pub fn show(app: &mut SheetApp, ui: &mut Ui) {
         .resizable(true);
     panel.frame(egui::Frame::NONE.fill(t.ribbon).inner_margin(10)).show(ui, |ui| {
         ui.horizontal(|ui| {
+            if pane == "scribe" {
+                let (rect, _) = ui.allocate_exact_size(vec2(24.0, 24.0), egui::Sense::hover());
+                crate::icons::paint(ui.painter(), rect, crate::icons::Icon::Enki, t.text);
+            }
             let title = match pane.as_str() {
                 "comments" => "Comments",
                 "developer" => "Developer",
-                "scribe" => "Scribe",
+                "scribe" => "Enki",
                 "watch" => "Watch Window",
                 "selection" => "Selection",
                 "formatChart" => "Format Chart Area",

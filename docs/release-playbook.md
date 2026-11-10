@@ -5,5 +5,5 @@ The release playbook shared by every crafting app lives in craftrules:
 (`storytold/craftrules`, `release/playbook.md`). It is the canonical copy; don't duplicate it
 here. The signing runbook is next to it in `release/signing-setup.md`.
 
-CellTrellis's copy was taken from DesignCraft (`.github/workflows/release.yml`, `packaging/`,
-`cargo xtask version`). CellTrellis-specific details are in [releasing.md](releasing.md).
+Tavru Sheets's copy was taken from DesignCraft (`.github/workflows/release.yml`, `packaging/`,
+`cargo xtask version`). Tavru Sheets-specific details are in [releasing.md](releasing.md).

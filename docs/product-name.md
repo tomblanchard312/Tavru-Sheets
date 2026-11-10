@@ -1,6 +1,6 @@
-# CellTrellis product name
+# Tavru Sheets product name
 
-Nanshe is now **CellTrellis**, effective 2026-10-29.
+Nanshe is now **Tavru Sheets**, effective 2026-10-29.
 
 Window titles, About/help text, translated product labels and installer/launcher display names use the new name. Existing settings/recovery folders, application IDs, installation registry keys, command names, automation namespaces and repository URLs are retained for compatibility. Existing saved documents and Enki model data are not moved.
 

@@ -3,7 +3,7 @@ name = "nanshe-calc"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "CellTrellis calculation engine: dependency graph, recalculation, evaluator, dynamic arrays"
+description = "Tavru Sheets calculation engine: dependency graph, recalculation, evaluator, dynamic arrays"
 
 [lints]
 workspace = true

@@ -1,6 +1,6 @@
 use super::Dialog;
 
-/// Help ▸ About CellTrellis: the app, its contributors and the AI models that helped. The credits
+/// Help ▸ About Tavru Sheets: the app, its contributors and the AI models that helped. The credits
 /// are compiled in (`crate::credits`, docs/contributors.md).
 pub(super) fn about(ui: &mut egui::Ui, d: &mut Dialog) {
     ui.horizontal(|ui| {
@@ -15,11 +15,11 @@ pub(super) fn about(ui: &mut egui::Ui, d: &mut Dialog) {
         "Contributors" => crate::credits::contributors_ui(ui),
         "Models" => crate::credits::models_ui(ui),
         _ => {
-            ui.heading("CellTrellis");
+            ui.heading("Tavru Sheets");
             ui.label(format!("Version {}", env!("CARGO_PKG_VERSION")));
             ui.add_space(4.0);
-            ui.label("A Rust spreadsheet with VBA and local Scribe assistance. Forked from GridCraft by the ArtCraft team.");
-            ui.hyperlink_to("CellTrellis on GitHub", "https://github.com/tomblanchard312/CellTrellis");
+            ui.label("A Rust spreadsheet with VBA and local Enki assistance. Forked from GridCraft by the ArtCraft team.");
+            ui.hyperlink_to("Tavru Sheets on GitHub", "https://github.com/tomblanchard312/Tavru-Sheets");
             ui.hyperlink_to("Join the ArtCraft Discord", "https://discord.gg/artcraft");
         }
     }

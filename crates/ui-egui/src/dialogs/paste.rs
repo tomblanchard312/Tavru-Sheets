@@ -63,7 +63,7 @@ pub(super) fn paste_special(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialo
             *confirm = true;
         }
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            let ok = ui.add(egui::Button::new(egui::RichText::new(format!("   {}   ", lang.tr("OK"))).color(t.on_accent)).fill(t.accent));
+            let ok = ui.add(egui::Button::new(egui::RichText::new(format!("   {}   ", lang.tr("OK"))).color(t.on_primary)).fill(t.primary));
             if ok.clicked() || ui.input(|i| i.key_pressed(Key::Enter)) {
                 *confirm = true;
             }

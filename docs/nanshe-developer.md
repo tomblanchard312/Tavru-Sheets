@@ -1,4 +1,4 @@
-# Developer and Scribe in CellTrellis
+# Developer and Enki in Tavru Sheets
 
 Last updated: 2026-10-28.
 
@@ -8,17 +8,17 @@ The port starts at upstream Nanshe `70327cd3d9b7de9af1bcaa33488c0736a0d346d8` an
 language/compiler and local-service client from Nisaba
 `a4298e6fc1ecfdedac64cfe763943737c608b33a`.
 
-| Area | Nisaba | Upstream GridCraft at the fork | CellTrellis |
+| Area | Nisaba | Upstream GridCraft at the fork | Tavru Sheets |
 |---|---|---|---|
 | Developer interface | Optional VBA CLI; no integrated editor | Recorded command scripts; preserves VBA projects | In-app source editor, language selector, runtime output, review and apply |
 | VBA | VBA → VB.NET → Roslyn; Word object model | Preserved but not executed | Reused transpiler/security checks, Excel-style object model, isolated preview process |
 | Python / R | No reusable execution integration | Python editor highlighting only | Local interpreters, shared command bridge, range read/write helpers |
-| Scribe | Local SharedAI v2 client, Word tracked changes | No assistant | Local Enki v2 client, formula proposals and VBA/Python/R drafts |
+| Assistant | Local SharedAI v2 client, Word tracked changes | No assistant | Local Enki v2 client, formula proposals and VBA/Python/R drafts |
 | Edits | Word command protocol | Spreadsheet commands and undo groups | Existing spreadsheet commands, atomic grouped replay with document/revision checks |
 
-Enki retains `sharedai-daemon`, `SHAREDAI_*`, and `SharedAI` paths. CellTrellis uses those exact
+Enki retains `sharedai-daemon`, `SHAREDAI_*`, and `SharedAI` paths. Tavru Sheets uses those exact
 identifiers; it does not embed a second inference engine. No dependency on the private Enki
-repository is needed to compile CellTrellis. The protocol client comes from public Nisaba source.
+repository is needed to compile Tavru Sheets. The protocol client comes from public Nisaba source.
 
 ## Language runtimes
 
@@ -47,7 +47,7 @@ declare these dependencies. Explicit environment overrides remain available for 
 
 Spelling uses the bundled SCOWL English word list on Windows, Linux, macOS and the web;
 no operating-system dictionary installation is required. Custom dictionary entries remain in
-CellTrellis preferences. The list and its redistribution notices are in `crates/engine/assets/`.
+Tavru Sheets preferences. The list and its redistribution notices are in `crates/engine/assets/`.
 
 Supported spreadsheet surface: Application, ActiveWorkbook/ThisWorkbook, Workbooks (the active
 workbook only), ActiveSheet, Worksheets/Sheets by name or 1-based index, Range, Cells,
@@ -55,7 +55,7 @@ Selection, ActiveCell, Value/Value2, Formula, Select, ClearContents, Offset, Res
 Font setters and NumberFormat setter. Multiple-cell reads return 1-based two-dimensional arrays;
 array writes must match the destination dimensions. Value writes preserve text literally, while
 Formula explicitly parses formulas. Sheet activation and reads see earlier changes through
-CellTrellis's actual calculation engine in the preview session.
+Tavru Sheets's actual calculation engine in the preview session.
 
 ```vb
 Sub Main()
@@ -96,7 +96,7 @@ the bounded workbook command allow-list, never file/desktop/nested-automation co
 ### R
 
 Install R and the `jsonlite` package in its library, then use `Rscript` or set `NANSHE_RSCRIPT` to
-its full path. CellTrellis does not install packages. Startup is `Rscript --vanilla`.
+its full path. Tavru Sheets does not install packages. Startup is `Rscript --vanilla`.
 
 ```r
 rows <- sheet_read("A1:A3", sheet = "Sheet1")
@@ -127,10 +127,10 @@ the workbook, or dropping the job cancels the runner. Unix runners start in thei
 `taskkill /T /F`. The child is reaped even on protocol failure. Deliberately detached processes
 and external side effects remain outside this lifecycle; this is not an OS resource sandbox.
 
-Source for VBA, Python and R is stored separately using CellTrellis's existing hidden-name storage.
+Source for VBA, Python and R is stored separately using Tavru Sheets's existing hidden-name storage.
 It survives XLSX saves; edited drafts join the normal Save/Close flow. CSV exports cannot retain
 script source. Code is never executed on open. Switching source language, editing code, or
-accepting a Scribe code draft clears the run acknowledgement and invalidates the old preview.
+accepting an Enki code draft clears the run acknowledgement and invalidates the old preview.
 
 Only run code you trust. Python/R imports have ordinary-user filesystem and network access;
 external file/network side effects happen during preview and cannot be undone by the workbook.
@@ -138,13 +138,17 @@ Nisaba's VBA syntax/symbol allow-list is retained as defence in depth, not an OS
 preview and replay allow-list protects the workbook command channel; it does not make arbitrary
 local code safe. The GUI and helpers never request administrator rights.
 
-## Scribe / Enki
+## Enki
+
+Open **Review → Enki** or **Developer → Enki**. Existing control commands retain their `view.scribe` and `ui.scribe*` identifiers.
+
+Choose **Plan** to get an explanation of the proposed steps without generating an apply action. Choose **Write VBA**, **Write Python**, or **Write R** to draft code for review. In **Plan**, choose **Automatic** or **Planner**. Planner uses a registered DeepSeek R1 model without displaying its model ID. Use **Refresh models** after registration. Coding tasks continue to choose their own model independently. The control command accepts `planModel` in Plan mode.
 
 Run a configured local Enki service and register a chat model using Enki's model workflow.
-Refresh models connects to `SHAREDAI_SOCKET` or `$XDG_RUNTIME_DIR/sharedai/ipc.sock`, starting
+The model refresh command connects to `SHAREDAI_SOCKET` or `$XDG_RUNTIME_DIR/sharedai/ipc.sock`, starting
 `sharedai-daemon` from `SHAREDAI_DAEMON`, the executable's helper directory, or PATH if needed.
 On Windows, the default is `\\.\pipe\SharedAI-<your-user-SID>-default`, overridden by
-`SHAREDAI_PIPE`. Only local pipe names in your account's namespace are accepted; CellTrellis checks
+`SHAREDAI_PIPE`. Only local pipe names in your account's namespace are accepted; Tavru Sheets checks
 the server process's token SID before sending requests and opens the pipe with identification-only
 security quality of service. Keep `sharedai-worker.exe` beside `sharedai-daemon.exe`; set
 `SHAREDAI_DAEMON` to the daemon executable when it is not in a helper directory or on PATH.
@@ -153,9 +157,9 @@ registry under `%LOCALAPPDATA%\SharedAI` by default. An explicit `SHAREDAI_REGIS
 must have a parent satisfying Enki's private-storage ACL checks; ordinary inherited permissions
 are rejected. Use the default private location in a fresh test profile. Pipe connection attempts,
 reads and writes have deadlines; streaming polls for Stop every 200 ms.
-No models are downloaded by CellTrellis.
+No models are downloaded by Tavru Sheets.
 
-Scribe sends only the user's request and at most 100 cells (32 KiB) from the captured selection to
+Enki sends only the user's request and at most 100 cells (32 KiB) from the captured selection to
 that local endpoint. It streams replies off the UI thread and supports Stop. Nisaba's reasoning
 tag filtering is reused; truncated, failed or cancelled replies never become actionable
 suggestions. Formula proposals use canonical English formula syntax and target the cell captured
@@ -248,9 +252,9 @@ The inherited fresh-file permission test expects a restrictive mask;
 it fails under this host's `umask 0002`. No file-saving implementation was changed in this port.
 
 
-## Shared Scribe memory and worksheet editing
+## Shared Enki memory and worksheet editing
 
-Enki protocol 3 stores completed Scribe conversations across the app and shares them with
+Enki protocol 3 stores completed Enki conversations across the app and shares them with
 Nisaba. The conversation section shows history and a compacted summary. Preferences and
 style are saved explicitly and survive clearing history. Compaction is local, lossy and commits
 only after successful generation; concurrent changes are preserved by revision checks. Full
@@ -259,7 +263,7 @@ may contain sensitive text and are persisted in Enki's private local registry. A
 can still answer but cannot save shared memory. Use matching updated app and daemon builds.
 
 **Chat and edit** can prepare cell values, formulas, highlights, font colours, bold/italic,
-number formats and selection changes on the current sheet. Scribe sees bounded live sheet
+number formats and selection changes on the current sheet. Enki sees bounded live sheet
 and selection data. Plans are validated in a workbook copy, with limits of 32 actions and
 1000 cells. Invalid formulas and unsupported commands are rejected. Review the listed changes
 and choose **Apply worksheet changes**; they form one Undo step. Changing the workbook first

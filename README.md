@@ -1,13 +1,13 @@
-# CellTrellis
+# Tavru Sheets
 
-> **Product name:** CellTrellis (formerly Nanshe). Existing application IDs, settings directories, command names and repository URLs remain compatible.
+> **Product name:** Tavru Sheets (formerly CellTrellis, Nanshe). Existing application IDs, settings directories, command names and repository URLs remain compatible.
 
 A Rust spreadsheet with a Developer workspace for **VBA, Python and R**, and **Scribe**, a local
 assistant powered by [Oqelith](https://github.com/tomblanchard312/Oqelith).
 
-CellTrellis is a fork of [GridCraft](https://github.com/storytold/gridcraft) by the ArtCraft team.
-It keeps CellTrellis's engine, command protocol, file formats and internal crate names so upstream
-improvements remain easy to merge. The desktop uses a separate CellTrellis settings profile, dark
+Tavru Sheets is a fork of [GridCraft](https://github.com/storytold/gridcraft) by the ArtCraft team.
+It keeps the engine, command protocol, file formats and internal crate names so upstream
+improvements remain easy to merge. The desktop uses a separate settings profile, dark
 surfaces and blue accents. About lists the upstream contributors and licenses.
 
 ## Run
@@ -25,8 +25,8 @@ ordinary file saves and close prompts also include edited script drafts.
 - VBA needs the optional .NET helper built from [`vba/`](vba/README.md).
 - Python needs a local Python 3 interpreter (`NANSHE_PYTHON` selects a virtual environment).
 - R needs a local R installation and the `jsonlite` package (`NANSHE_RSCRIPT` selects Rscript).
-- Scribe needs local Enki and a registered chat model. Open **Review → Scribe** or
-  **Developer → Scribe**, refresh models, and send a request. Responses can explain a selection,
+- The Scribe pane requires a local Oqelith runtime and a registered chat model. Open Scribe and
+  send a request. Responses can explain a selection,
   propose a formula, or draft any of the three script languages. Applying or running a suggestion
   always requires your action.
 
@@ -41,14 +41,14 @@ dotnet build vba/NansheVba.sln -m:1
 dotnet run --project vba/tests/Nanshe.Vba.Tests --no-build
 ```
 
-The inherited CellTrellis architecture and format documentation is in [`docs/`](docs/). Packaged
+The inherited architecture and format documentation is in [`docs/`](docs/). Packaged
 installer identifiers and artwork still follow upstream; this branch is a source-build port,
-not a signed CellTrellis release. The upstream self-update feed is disabled for this fork.
+not a signed Tavru Sheets release. The upstream self-update feed is disabled for this fork.
 
 ## License and credits
 
 MIT OR Apache-2.0. Nanshe is copyright (c) 2026 ArtCraft Team and the Nanshe contributors;
 Nisaba-derived and Nanshe changes are copyright (c) 2026 Tom Blanchard. See [NOTICE](NOTICE) and
-[ATTRIBUTION.md](ATTRIBUTION.md). CellTrellis is not sponsored or endorsed by the ArtCraft team.
+[ATTRIBUTION.md](ATTRIBUTION.md). Tavru Sheets is not sponsored or endorsed by the ArtCraft team.
 
 Voice accessibility preview: see [dictation, transcription, translation and safe voice controls](docs/VOICE.md).

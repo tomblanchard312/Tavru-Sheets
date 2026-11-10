@@ -23,7 +23,7 @@ Generated-in-code art is original and has no file to list: the UI icon set (`cra
 | `docs/brand/artcraft-mark-black.svg` | ArtCraft Team | craftrules `assets/brand/` | ArtCraft brand terms | Trademark |
 | `docs/brand/artcraft-mark-black.png` | ArtCraft Team | craftrules `assets/brand/` | ArtCraft brand terms | Trademark |
 | `docs/brand/LICENSE-brand.txt` | (licence text) | craftrules | — | |
-| `assets/icons/scribe.png` | Nisaba contributors (AI-assisted) | Original Scribe artwork generated for Nisaba, 2026-10-26; reused from [DraftHearth](https://github.com/tomblanchard312/DraftHearth/blob/f56e0ccade691e55c4d6e385e0bf5fd2774ee699/assets/icons/scribe.png); SHA-256 `5a8681c035832c9f2e06c4b7f34360947c213623217aeda71ac488a1801f74da` | MIT OR Apache-2.0 (`LICENSE-MIT`, `LICENSE-APACHE`) | Shared approved Scribe logo in the ribbon and assistant pane |
+| `assets/icons/enki.png` | Enki contributors (AI-assisted) | [Enki 48px icon](https://github.com/tomblanchard312/Enki/blob/f14e4e066208d8c488a556683a6a4b9fea7128f9/assets/branding/enki-48.png), SHA-256 `4b88cce72fadfb37e8f4d88959dc84ef62d70729970f57d7448e9fc0c6a4afae` | Apache-2.0 (`LICENSE-APACHE`) | Enki logo in the ribbon and assistant pane |
 | `assets/app-icon/nanshe.svg` | Tom Blanchard (AI-assisted original artwork) | original (hand-written SVG; `packaging/icons.sh`) | MIT OR Apache-2.0 (`assets/app-icon/LICENSE.txt`) | Blue-and-gold folded spreadsheet app icon |
 | `packaging/macos/dmg/background.svg` | @XusBadia; Tom Blanchard (Nanshe title) | original (hand-written SVG, derived from the Nanshe app icon `assets/app-icon/nanshe.svg`, referenced via `<image>`, not copied; text is outlined glyph paths; `packaging/macos/dmg/generate.py` renders it to `background.tiff`) | MIT OR Apache-2.0 (`LICENSE-MIT`, `LICENSE-APACHE`) | Nanshe macOS DMG window background for the Finder window; added 2026-10-08 |
 | `packaging/macos/dmg/background.tiff` | @XusBadia | Rendered from `packaging/macos/dmg/background.svg` by `packaging/macos/dmg/generate.py` | MIT OR Apache-2.0 (`LICENSE-MIT`, `LICENSE-APACHE`) | 1x + 2x HiDPI TIFF for the macOS DMG window; includes the app icon (see its row) and LittleCMS's built-in sRGB profile ("No copyright, use freely") |
@@ -50,9 +50,8 @@ Generated-in-code art is original and has no file to list: the UI icon set (`cra
 | `docs/images/format-chart.png` | GridCraft contributors | upstream screenshot, predating the Nanshe fork, rendered offscreen (`crates/ui-egui/examples/snapshot.rs`) showing an original sample workbook | MIT OR Apache-2.0 | README screenshot; no third-party content |
 | `docs/images/page-break.png` | GridCraft contributors | upstream screenshot, predating the Nanshe fork, rendered offscreen (`crates/ui-egui/examples/snapshot.rs`) showing an original sample workbook | MIT OR Apache-2.0 | README screenshot; no third-party content |
 
-The Scribe speech-bubble/spark drawing in `crates/ui-egui/src/icons.rs` is adapted from Nisaba `a4298e6f`, `crates/ui-egui/src/icons.rs` (original Nisaba contributors artwork, MIT OR Apache-2.0), scaled to Nanshe’s design grid.
 
 | `crates/engine/assets/english-words.txt` | SCOWL contributors, Kevin Atkinson et al. | Debian wamerican `/usr/share/dict/american-english`, unmodified | SCOWL composite licence | Full notices in `crates/engine/assets/english-words.LICENSE`; unmodified word list |
 | `crates/engine/assets/english-words.LICENSE` | SCOWL contributors | Debian wamerican copyright file | SCOWL composite notices | Reproduced verbatim |
 
-Installer artwork update (2026-10-29): original CellTrellis blue-and-gold macOS background by Tom Blanchard, MIT OR Apache-2.0, with bundled OFL Inter text converted to paths. Legacy artwork attribution remains in Git history.
+Installer artwork update (2026-10-29): original Tavru Sheets blue-and-gold macOS background by Tom Blanchard, MIT OR Apache-2.0, with bundled OFL Inter text converted to paths. Legacy artwork attribution remains in Git history.

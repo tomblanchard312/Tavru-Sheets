@@ -41,6 +41,15 @@ pub const SERIF: &str = "serif";
 
 pub const MONO: &str = "mono";
 
+pub const CODE: &str = "code";
+pub const DISPLAY: &str = "display";
+
+pub const NUMERIC: &str = "numeric";
+
+pub fn numeric_font(size: f32) -> FontId {
+    FontId::new(size, FontFamily::Name(NUMERIC.into()))
+}
+
 pub fn ui_font(size: f32) -> FontId {
     FontId::new(size, FontFamily::Name(UI.into()))
 }
@@ -280,6 +289,20 @@ pub(super) fn candidates(role: &str) -> Vec<(String, u32)> {
     let mut add = |s: String, i: u32| v.push((s, i));
     match role {
         "ui" => {
+            for p in in_dirs(
+                &lin,
+                &[
+                    "eridu-inter/Inter-Regular.otf",
+                    "inter/Inter-Regular.otf",
+                    "inter/Inter-Regular.ttf",
+                    "inter-zorin-os/Inter-Regular.ttf",
+                    "Inter/Inter-Regular.ttf",
+                    "inter-vf/InterVariable.ttf",
+                    "noto/NotoSans-Regular.ttf",
+                ],
+            ) {
+                add(p, 0);
+            }
             add(format!("{mac_sys}/SFNS.ttf"), 0);
             add(format!("{mac_sys}/HelveticaNeue.ttc"), 0);
             add(format!("{win}\\segoeui.ttf"), 0);
@@ -296,6 +319,18 @@ pub(super) fn candidates(role: &str) -> Vec<(String, u32)> {
             add("/usr/share/fonts/liberation-sans-fonts/LiberationSans-Regular.ttf".into(), 0);
         }
         "ui-bold" => {
+            for p in in_dirs(
+                &lin,
+                &[
+                    "eridu-inter/Inter-SemiBold.otf",
+                    "inter/Inter-SemiBold.otf",
+                    "inter/Inter-SemiBold.ttf",
+                    "inter-zorin-os/Inter-SemiBold.ttf",
+                    "Inter/Inter-SemiBold.ttf",
+                ],
+            ) {
+                add(p, 0);
+            }
             add(format!("{mac_sys}/HelveticaNeue.ttc"), 1);
             add(format!("{win}\\segoeuib.ttf"), 0);
             for p in in_dirs(&lin, &["noto/NotoSans-Bold.ttf", "dejavu/DejaVuSans-Bold.ttf", "liberation/LiberationSans-Bold.ttf"]) {
@@ -364,6 +399,36 @@ pub(super) fn candidates(role: &str) -> Vec<(String, u32)> {
             }
             add("/usr/share/fonts/liberation-serif-fonts/LiberationSerif-Regular.ttf".into(), 0);
             add("/usr/share/fonts/dejavu-serif-fonts/DejaVuSerif.ttf".into(), 0);
+        }
+        CODE => {
+            for p in in_dirs(
+                &lin,
+                &[
+                    "jetbrains-mono/JetBrainsMono-Regular.ttf",
+                    "jetbrains-mono-zorin-os/JetBrainsMono-Regular.ttf",
+                    "JetBrainsMono/JetBrainsMono-Regular.ttf",
+                ],
+            ) {
+                add(p, 0);
+            }
+        }
+        NUMERIC => {
+            for p in in_dirs(&lin, &["eridu-inter/InterTabular-Regular.ttf", "inter/InterTabular-Regular.ttf"]) {
+                add(p, 0);
+            }
+        }
+        DISPLAY => {
+            for p in in_dirs(
+                &lin,
+                &[
+                    "source-serif/SourceSerif4Display-Semibold.ttf",
+                    "source-serif/SourceSerif4Display-Semibold.otf",
+                    "source-serif-4/SourceSerif4Display-Semibold.otf",
+                    "source-serif-4/SourceSerif4-Semibold.otf",
+                ],
+            ) {
+                add(p, 0);
+            }
         }
         "mono" => {
             add(format!("{mac_sys}/SFNSMono.ttf"), 0);
@@ -441,7 +506,7 @@ fn font_definitions_impl(language: crate::i18n::Language, used: &[String], syste
     // and epaint picks the first face that has the glyph, so they only catch their own scripts.
     let fallback = if system { load_fallback(&mut fonts, HanOrder::of(language)) } else { Vec::new() };
     let hack = fonts.font_data.contains_key(HACK).then_some(HACK);
-    for role in [UI, UI_BOLD, CELL, CELL_BOLD, CELL_ITALIC, CELL_BOLD_ITALIC, SERIF, MONO] {
+    for role in [UI, UI_BOLD, CELL, CELL_BOLD, CELL_ITALIC, CELL_BOLD_ITALIC, SERIF, MONO, CODE, DISPLAY, NUMERIC] {
         let chain = build_role_chain(&mut fonts, role, &base_prop, &base_mono, &fallback, hack, system);
         fonts.families.insert(FontFamily::Name(role.into()), chain);
         bound.push(role.to_string());
@@ -503,6 +568,16 @@ fn build_role_chain(
     } else if role.starts_with("cell-") {
         chain.push(format!("sys-{CELL}"));
     }
+    let fallback_role = match role {
+        CODE => Some(MONO),
+        DISPLAY => Some(UI_BOLD),
+        NUMERIC => Some(UI),
+        _ => None,
+    };
+    if let Some(chain_fallback) = fallback_role.and_then(|name| fonts.families.get(&FontFamily::Name(name.into()))) {
+        chain.extend(chain_fallback.iter().cloned());
+        return chain;
+    }
     chain.extend(if role == MONO { base_mono.to_vec() } else { base_prop.to_vec() });
     // egui bundles Hack, a monospace face rich in arrows, triangles and keyboard symbols, but
     // 0.37 only puts it in the Monospace family. The interface draws ↑, ▲, ▼, ▸, ▾ and ↳ as
@@ -525,7 +600,7 @@ fn bind_cell_fallback(fonts: &mut FontDefinitions, fallback: &[String]) {
     if !fonts.font_data.contains_key(&cell_key) {
         return;
     }
-    for role in [UI, UI_BOLD, SERIF, MONO] {
+    for role in [UI, UI_BOLD, SERIF, MONO, CODE, DISPLAY, NUMERIC] {
         if let Some(chain) = fonts.families.get_mut(&FontFamily::Name(role.into()))
             && !chain.contains(&cell_key)
         {
