@@ -18,7 +18,7 @@ pub(super) fn about(ui: &mut egui::Ui, d: &mut Dialog) {
             ui.heading("Tavru Sheets");
             ui.label(format!("Version {}", env!("CARGO_PKG_VERSION")));
             ui.add_space(4.0);
-            ui.label("A Rust spreadsheet with VBA and local Enki assistance. Forked from GridCraft by the ArtCraft team.");
+            ui.label("A Rust spreadsheet with VBA and on-device assistance. Forked from GridCraft by the ArtCraft team.");
             ui.hyperlink_to("Tavru Sheets on GitHub", "https://github.com/tomblanchard312/Tavru-Sheets");
             ui.hyperlink_to("Join the ArtCraft Discord", "https://discord.gg/artcraft");
         }

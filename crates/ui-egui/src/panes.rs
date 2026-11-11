@@ -27,12 +27,12 @@ pub fn show(app: &mut SheetApp, ui: &mut Ui) {
         ui.horizontal(|ui| {
             if pane == "scribe" {
                 let (rect, _) = ui.allocate_exact_size(vec2(24.0, 24.0), egui::Sense::hover());
-                crate::icons::paint(ui.painter(), rect, crate::icons::Icon::Enki, t.text);
+                crate::icons::paint(ui.painter(), rect, crate::icons::Icon::ChatText, t.text);
             }
             let title = match pane.as_str() {
                 "comments" => "Comments",
                 "developer" => "Developer",
-                "scribe" => "Enki",
+                "scribe" => "Ask",
                 "watch" => "Watch Window",
                 "selection" => "Selection",
                 "formatChart" => "Format Chart Area",
@@ -49,14 +49,6 @@ pub fn show(app: &mut SheetApp, ui: &mut Ui) {
             });
         });
         ui.separator();
-        if pane == "scribe" {
-            egui::Panel::bottom("scribe_enki_footer").exact_size(24.0).frame(egui::Frame::NONE).show_separator_line(false).show(ui, |ui| {
-                ui.horizontal(|ui| {
-                    crate::icons::enki_badge(ui, 20.0);
-                    ui.label(egui::RichText::new("Powered by Enki").small().weak());
-                });
-            });
-        }
         egui::ScrollArea::vertical().show(ui, |ui| match pane.as_str() {
             "comments" => comments(app, ui),
             "developer" => crate::developer::show(app, ui, false),
