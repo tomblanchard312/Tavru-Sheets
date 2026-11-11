@@ -1525,6 +1525,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
 
 [[package]]
+name = "eridu-style"
+version = "0.1.0"
+source = "git+https://github.com/tomblanchard312/tavru-style.git?rev=97efe362bb37da690f58bc953fba03d4b9ba2c21#97efe362bb37da690f58bc953fba03d4b9ba2c21"
+dependencies = [
+ "egui",
+]
+
+[[package]]
 name = "errno"
 version = "0.3.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3074,6 +3082,7 @@ dependencies = [
  "egui_kittest",
  "enki-speech-ui",
  "epaint_default_fonts",
+ "eridu-style",
  "image",
  "log",
  "nanshe-chart",

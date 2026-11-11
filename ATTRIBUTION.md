@@ -56,3 +56,5 @@ Generated-in-code art is original unless credited below: the UI icon set (`crate
 | `crates/engine/assets/english-words.LICENSE` | SCOWL contributors | Debian wamerican copyright file | SCOWL composite notices | Reproduced verbatim |
 
 Installer artwork update (2026-10-29): original Tavru Sheets blue-and-gold macOS background by Tom Blanchard, MIT OR Apache-2.0, with bundled OFL Inter text converted to paths. Legacy artwork attribution remains in Git history.
+
+Shared UI dependency: `tavru-style` at `97efe362bb37da690f58bc953fba03d4b9ba2c21` ([source](https://github.com/tomblanchard312/tavru-style)). Its bundled Inter and JetBrains Mono fonts use OFL-1.1, and Phosphor icons use MIT. The original license files remain in the dependency.

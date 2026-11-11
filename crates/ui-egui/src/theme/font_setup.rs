@@ -530,6 +530,18 @@ fn font_definitions_impl(language: crate::i18n::Language, used: &[String], syste
     // symbols the host image lacks (Japanese, Korean, Thai, Arabic, Georgian and the UI symbols).
     // Chinese comes from the native-only OFL LXGW face when embedded; a system Han face still
     // leads, and the barred Noto CJK collection never enters.
+    // Shared UI fonts coexist with the workbook's named document families.
+    let shared = tavru_style::fonts::definitions();
+    fonts.font_data.extend(shared.font_data);
+    for (family, mut chain) in shared.families {
+        let existing = fonts.families.entry(family).or_default();
+        for key in existing.iter().chain(&fallback) {
+            if !chain.contains(key) {
+                chain.push(key.clone());
+            }
+        }
+        *existing = chain;
+    }
     append_craft_faces(&mut fonts);
     drop_unparseable_fonts(&mut fonts);
     // Only families egui still has data for count as bound (a dropped face can empty a chain).
