@@ -179,42 +179,43 @@ impl Tokens {
         Tokens::palette(true)
     }
 
-    /// Maps EriduOS design-system/tokens/colors.json to the spreadsheet chrome.
+    /// Maps TavruOS design-system/tokens/colors.json to the spreadsheet chrome.
     fn palette(dark: bool) -> Tokens {
+        let shared = if dark { tavru_style::DARK } else { tavru_style::LIGHT };
         Tokens {
             dark,
-            window: pick(dark, rgb(0xFAF9F6), rgb(0x17232B)),
-            ribbon: pick(dark, rgb(0xFFFFFF), rgb(0x202C33)),
-            ribbon_border: pick(dark, rgb(0xC7CDD0), rgb(0x71818A)),
-            text: pick(dark, rgb(0x202C33), rgb(0xF7F7F4)),
-            text_dim: pick(dark, rgb(0x475962), rgb(0xD0D9DE)),
+            window: shared.background,
+            ribbon: shared.surface,
+            ribbon_border: shared.border,
+            text: shared.text,
+            text_dim: shared.text_muted,
             text_disabled: pick(dark, Color32::from_rgb(0xB0, 0xB0, 0xB0), Color32::from_rgb(0x70, 0x70, 0x70)),
-            accent: pick(dark, rgb(0x246B83), rgb(0x83C9E0)),
-            accent_dark: pick(dark, rgb(0x202C33), rgb(0xF7F7F4)),
-            accent_soft: pick(dark, rgb(0xE3EEF1), rgb(0x30505F)),
-            hover: pick(dark, rgb(0xEEF3F4), rgb(0x253740)),
-            pressed: pick(dark, rgb(0xE3EEF1), rgb(0x30505F)),
-            separator: pick(dark, rgb(0xC7CDD0), rgb(0x71818A)),
+            accent: shared.accent,
+            accent_dark: shared.text,
+            accent_soft: shared.selected,
+            hover: shared.surface_hover,
+            pressed: shared.selected,
+            separator: shared.border,
             grid_bg: Color32::WHITE,
-            desk: pick(dark, rgb(0xF1EEE8), rgb(0x293A43)),
+            desk: shared.surface_subtle,
             gridline: Color32::from_rgb(0xE1, 0xE1, 0xE1),
-            header_bg: pick(dark, rgb(0xF1EEE8), rgb(0x293A43)),
-            header_text: pick(dark, rgb(0x475962), rgb(0xD0D9DE)),
-            header_line: pick(dark, rgb(0xC7CDD0), rgb(0x71818A)),
-            header_sel_bg: pick(dark, rgb(0xE3EEF1), rgb(0x30505F)),
-            header_sel_text: pick(dark, rgb(0x202C33), rgb(0xF7F7F4)),
-            header_all_bg: pick(dark, rgb(0xE3EEF1), rgb(0x30505F)),
-            sel_fill: pick(dark, Color32::from_rgba_unmultiplied(0x24, 0x6B, 0x83, 0x1C), Color32::from_rgba_unmultiplied(0x24, 0x6B, 0x83, 0x24)),
-            sel_border: rgb(0x246B83),
-            input_bg: pick(dark, rgb(0xFFFFFF), rgb(0x202C33)),
-            input_border: pick(dark, rgb(0xC7CDD0), rgb(0x71818A)),
-            tab_bar: pick(dark, rgb(0xFAF9F6), rgb(0x17232B)),
-            tab_active: pick(dark, rgb(0xFFFFFF), rgb(0x202C33)),
-            status_bar: pick(dark, rgb(0xFAF9F6), rgb(0x17232B)),
+            header_bg: shared.surface_subtle,
+            header_text: shared.text_muted,
+            header_line: shared.border,
+            header_sel_bg: shared.selected,
+            header_sel_text: shared.text,
+            header_all_bg: shared.selected,
+            sel_fill: tavru_style::LIGHT.primary.linear_multiply(if dark { 0.14 } else { 0.11 }),
+            sel_border: tavru_style::LIGHT.primary,
+            input_bg: shared.surface,
+            input_border: shared.border,
+            tab_bar: shared.background,
+            tab_active: shared.surface,
+            status_bar: shared.background,
             cell_text: Color32::BLACK,
-            menu_bg: pick(dark, rgb(0xFFFFFF), rgb(0x202C33)),
+            menu_bg: shared.surface,
             shadow: pick(dark, Color32::from_black_alpha(40), Color32::from_black_alpha(90)),
-            danger: pick(dark, rgb(0xA32929), rgb(0xFF9D99)),
+            danger: shared.danger,
             error_check_green: pick(dark, Color32::from_rgb(0x1E, 0x8E, 0x3E), Color32::from_rgb(0x4C, 0xC2, 0x6B)),
             warning_fill: Color32::from_rgb(0xF2, 0xB7, 0x05),
             warning_ink: Color32::BLACK,
@@ -222,11 +223,12 @@ impl Tokens {
             notice_warn_border: pick(dark, Color32::from_rgb(0xF0, 0xC3, 0x6E), Color32::from_rgb(0x7A, 0x67, 0x30)),
             notice_info_bg: pick(dark, Color32::from_rgb(0xEA, 0xF2, 0xFB), Color32::from_rgb(0x24, 0x33, 0x44)),
             notice_info_border: pick(dark, Color32::from_rgb(0xB9, 0xD2, 0xEC), Color32::from_rgb(0x3B, 0x55, 0x72)),
-            on_accent: pick(dark, rgb(0xFFFFFF), rgb(0x10232D)),
-            primary: pick(dark, rgb(0x94592C), rgb(0xE0A472)),
-            on_primary: pick(dark, rgb(0xFFFFFF), rgb(0x10232D)),
-            chrome: pick(dark, rgb(0x173B4D), rgb(0x10232D)),
-            on_chrome: pick(dark, rgb(0xE9DFCE), rgb(0xE9DFCE)),
+            on_accent: shared.accent_text,
+            primary: shared.primary,
+            on_primary: shared.on_primary,
+            chrome: shared.chrome,
+            on_chrome: shared.on_chrome,
+
             cat: pick(
                 dark,
                 [rgb(0x2F6FCF), rgb(0x1E8A4C), rgb(0xC8601A), rgb(0xC8372D), rgb(0x8350C8), rgb(0x13808A), rgb(0x9C6C00), rgb(0x5A6B7D)],
@@ -326,6 +328,8 @@ pub fn apply(ctx: &egui::Context, dark: bool) {
         s.text_styles.insert(egui::TextStyle::Small, ui_font(12.0));
         s.text_styles.insert(egui::TextStyle::Heading, ui_bold(20.0));
         s.text_styles.insert(egui::TextStyle::Monospace, FontId::new(12.0, FontFamily::Name(CODE.into())));
+        let shared = if s.visuals.dark_mode { tavru_style::DARK } else { tavru_style::LIGHT };
+        tavru_style::style_with(s, &shared);
     });
 }
 
