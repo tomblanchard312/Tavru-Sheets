@@ -173,7 +173,7 @@ pub fn show(app: &mut SheetApp, ctx: &egui::Context) {
                 _ => None,
             };
             if let Some(tool) = help {
-                if ui.button("Ask Enki for help…").on_hover_text("Use the selected cells and these settings to prepare a question. Review it in Enki and press Send.").clicked() {
+                if ui.button("Ask for help…").on_hover_text("Use the selected cells and these settings to prepare a question. Review it in Ask and press Send.").clicked() {
                     match app.run("ui.scribeAnalysis", json!({"tool":tool,"dialog":d.name,"setup":d.values})) {
                         Ok(_) => open = false,
                         Err(e) => app.toast = Some((e, ui.input(|i| i.time))),

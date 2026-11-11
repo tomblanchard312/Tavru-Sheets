@@ -1,5 +1,4 @@
-//! Tavru Sheets's icon set, with original vector drawings and shared Scribe artwork (see
-//! ATTRIBUTION.md). Large ribbon icons use the same drawings at 32×32 with accent colours.
+//! Tavru Sheets's vector icon set. Large ribbon icons use the same drawings at 32×32 with accent colours.
 //! Accent and paper colours come from the theme tokens, so icons follow light and dark mode;
 //! icons placed on the sheet ([`paint_on_sheet`]) keep the light colours, as the sheet does.
 
@@ -7,49 +6,6 @@ use egui::epaint::{CubicBezierShape, PathShape, PathStroke};
 use egui::{Color32, Painter, Pos2, Rect, Stroke, pos2, vec2};
 
 use crate::theme::{Cat, Tokens};
-
-/// Cached companion artwork; a malformed asset leaves the text fully usable.
-pub(crate) fn enki_badge(ui: &mut egui::Ui, size: f32) {
-    let key = egui::Id::unique("enki.character.badge");
-    let texture = ui.ctx().data(|data| data.get_temp::<egui::TextureHandle>(key)).or_else(|| {
-        let rgba = image::load_from_memory(include_bytes!("../../../assets/icons/enki-character.png")).ok()?.into_rgba8();
-        let pixels = egui::ColorImage::from_rgba_unmultiplied([rgba.width() as usize, rgba.height() as usize], rgba.as_raw());
-        let texture = ui.ctx().load_texture("Enki character", pixels, egui::TextureOptions::LINEAR);
-        ui.ctx().data_mut(|data| data.insert_temp(key, texture.clone()));
-        Some(texture)
-    });
-    if let Some(texture) = texture {
-        ui.add(egui::Image::new((texture.id(), texture.size_vec2())).fit_to_exact_size(egui::vec2(size, size))).on_hover_text("Enki");
-    }
-}
-
-pub(crate) fn enki_label(ui: &mut egui::Ui, text: impl Into<egui::WidgetText>) -> egui::Response {
-    let text = text.into();
-    if text.text().contains("Enki") {
-        ui.horizontal_wrapped(|ui| {
-            enki_badge(ui, 36.0);
-            ui.label(text)
-        })
-        .inner
-    } else {
-        ui.label(text)
-    }
-}
-
-const SCRIBE_PNG: &[u8] = include_bytes!("../../../assets/icons/scribe.png");
-
-fn scribe_texture(ctx: &egui::Context) -> Option<egui::TextureHandle> {
-    let key = egui::Id::unique("celltrellis.scribe.icon");
-    if let Some(texture) = ctx.data(|d| d.get_temp::<egui::TextureHandle>(key)) {
-        return Some(texture);
-    }
-    let rgba = image::load_from_memory_with_format(SCRIBE_PNG, image::ImageFormat::Png).ok()?.into_rgba8();
-    let size = [rgba.width() as usize, rgba.height() as usize];
-    let image = egui::ColorImage::from_rgba_unmultiplied(size, rgba.as_raw());
-    let texture = ctx.load_texture("Scribe", image, egui::TextureOptions::LINEAR);
-    ctx.data_mut(|d| d.insert_temp(key, texture.clone()));
-    Some(texture)
-}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Icon {
@@ -157,7 +113,7 @@ pub enum Icon {
     AgentControl,
     Journal,
     Update,
-    Scribe,
+    ChatText,
     Pen,
     Share,
     Search,
@@ -701,12 +657,11 @@ fn paint_with(p: &Painter, rect: Rect, icon: Icon, c: Color32, pal: &Palette) {
             g.rect(2.5, 2.5, 11.0, 11.0, None, Some(light));
             g.line(&[(4.0, 4.0), (11.0, 4.0), (11.0, 10.0), (4.0, 10.0), (4.0, 4.0)], blue, 1.4);
         }
-        Icon::Scribe => {
-            if let Some(texture) = scribe_texture(p.ctx()) {
-                p.image(texture.id(), r, Rect::from_min_max(Pos2::ZERO, pos2(1.0, 1.0)), Color32::WHITE);
-            } else {
-                p.text(r.center(), egui::Align2::CENTER_CENTER, "S", egui::FontId::proportional(side * 0.7), blue);
-            }
+        Icon::ChatText => {
+            // Phosphor ChatText, adapted to the 16-point icon grid.
+            g.line(&[(2.0, 13.5), (2.0, 2.5), (14.0, 2.5), (14.0, 11.5), (5.0, 11.5), (2.0, 13.5)], c, 1.0);
+            g.line(&[(6.0, 6.0), (10.0, 6.0)], c, 1.0);
+            g.line(&[(6.0, 8.0), (10.0, 8.0)], c, 1.0);
         }
         Icon::CommandPalette => {
             g.rect(1.5, 2.5, 13.0, 11.0, None, Some(c));
@@ -956,49 +911,6 @@ fn paint_alignment(g: &G<'_>, icon: Icon, c: Color32, light: Color32, blue: Colo
         }
         if icon == Icon::IndentDec {
             g.poly(&[(5.0, 6.0), (2.0, 8.0), (5.0, 10.0)], blue);
-        }
-    }
-}
-
-#[cfg(test)]
-mod scribe_brand_tests {
-    use super::*;
-    #[test]
-    fn scribe_logo_uses_the_approved_texture_at_toolbar_and_header_sizes() {
-        let ctx = egui::Context::default();
-        let texture = scribe_texture(&ctx).unwrap();
-        for size in [24.0, 32.0, 40.0] {
-            let output = ctx.run_ui(egui::RawInput::default(), |ui| {
-                paint(ui.painter(), Rect::from_min_size(Pos2::ZERO, vec2(size, size)), Icon::Scribe, Color32::WHITE);
-            });
-            let painted = output.shapes.iter().any(|s| matches!(&s.shape,egui::Shape::Mesh(m) if m.texture_id==texture.id()));
-            output.drop_without_applying_deltas();
-            assert!(painted, "Scribe must paint the approved image, not the generic speech bubble");
-            assert_eq!(scribe_texture(&ctx).unwrap().id(), texture.id());
-        }
-    }
-}
-
-#[cfg(test)]
-mod enki_companion_tests {
-    use super::*;
-    #[test]
-    fn companion_is_transparent_and_its_texture_is_reused() {
-        let rgba = image::load_from_memory(include_bytes!("../../../assets/icons/enki-character.png")).unwrap().into_rgba8();
-        assert_eq!(rgba.dimensions(), (256, 256));
-        assert!(rgba.pixels().any(|pixel| pixel[3] == 0));
-        let ctx = egui::Context::default();
-        let mut expected = None;
-        for _ in 0..3 {
-            let mut output = ctx.run_ui(egui::RawInput::default(), |ui| enki_badge(ui, 36.0));
-            let texture = ctx.data(|data| data.get_temp::<egui::TextureHandle>(egui::Id::unique("enki.character.badge"))).unwrap();
-            if let Some(expected) = expected {
-                assert_eq!(texture.id(), expected);
-            } else {
-                expected = Some(texture.id());
-            }
-            assert!(!output.shapes.is_empty());
-            output.textures_delta.clear();
         }
     }
 }

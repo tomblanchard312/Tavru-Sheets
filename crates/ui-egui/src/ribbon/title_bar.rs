@@ -126,7 +126,7 @@ pub fn title_bar(app: &mut SheetApp, ui: &mut Ui) {
                 if __k.clicked() {
                     app.open_dialog("commandSearch", json!({}));
                 }
-                if small_button(ui, Icon::Scribe, "Scribe", "Scribe", false).clicked() {
+                if small_button(ui, Icon::ChatText, "Ask", "Ask", false).clicked() {
                     app.run_or_alert("view.scribe", json!({}));
                 }
                 #[cfg(not(target_arch = "wasm32"))]
@@ -234,7 +234,7 @@ mod title_bar_tests {
                     app,
                 );
             h.run_steps(2);
-            h.query_by_label("Scribe").expect("persistent Scribe button").click();
+            h.query_by_label("Ask").expect("persistent Ask button").click();
             h.run_steps(2);
             assert_eq!(h.state().grid.pane.as_deref(), Some("scribe"));
         }
