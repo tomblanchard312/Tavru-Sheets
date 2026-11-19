@@ -10,6 +10,10 @@ It keeps the engine, command protocol, file formats and internal crate names so 
 improvements remain easy to merge. The desktop uses a separate settings profile, dark
 surfaces and blue accents. About lists the upstream contributors and licenses.
 
+![Tavru Sheets workbook with the editing ribbon](docs/images/tavru-mvp-vm.png)
+
+*Captured from an installed TavruOS MVP in a disposable VM.*
+
 ## Run
 
 ```sh
