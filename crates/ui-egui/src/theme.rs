@@ -1,7 +1,7 @@
 //! Design tokens and fonts.
 //!
-//! Chrome uses Eridu Design System colours. Fonts come from egui's
-//! bundled faces and the operating system at runtime: the UI prefers Eridu typography, cells use
+//! Chrome uses Tavru design tokens. Fonts come from egui's
+//! bundled faces and the operating system at runtime: the UI prefers Tavru typography, cells use
 //! the best available match for the workbook font (Calibri/Carlito/Aptos/Arial…), and egui's
 //! bundled Ubuntu/Hack/egui-icons and monochrome emoji faces are the last resort. A build with
 //! `CRAFT_FONTS_DIR` also embeds the permitted OFL craft-fonts faces (barred Adobe/Source/Noto CJK
