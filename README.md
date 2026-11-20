@@ -1,19 +1,19 @@
 # Tavru Sheets
 
-> **Product name:** Tavru Sheets (formerly CellTrellis, Nanshe). Existing application IDs, settings directories, command names and repository URLs remain compatible.
+> **Product name:** Tavru Sheets. Earlier public names were CellTrellis and Nanshe. Repository: [github.com/tomblanchard312/Tavru-Sheets](https://github.com/tomblanchard312/Tavru-Sheets).
 
 A Rust spreadsheet with a Developer workspace for **VBA, Python and R**, and **Scribe**, a local
 assistant powered by [Oqelith](https://github.com/tomblanchard312/Oqelith).
 
 Tavru Sheets is a fork of [GridCraft](https://github.com/storytold/gridcraft) by the ArtCraft team.
-It keeps the engine, command protocol, file formats and internal crate names so upstream
-improvements remain easy to merge. The desktop uses a separate settings profile, dark
-surfaces and blue accents. About lists the upstream contributors and licenses.
+The window title is Tavru Sheets. Crates, the `nanshe` binary, `NANSHE_*` variables, command
+names and settings directories stay on the Nanshe names so upstream improvements remain easy
+to merge. About lists the upstream contributors and licenses. See [product identity](docs/product-name.md).
 
 ## Run
 
 ```sh
-cargo run -p nanshe -- --sample sales
+cargo run -p tavru-sheets -- --sample sales
 ```
 
 Open **Developer → Code Editor**, choose VBA, Python or R, edit the script, acknowledge that you
@@ -23,7 +23,7 @@ closed workbook invalidates its preview. Save source in the workbook with **Save
 ordinary file saves and close prompts also include edited script drafts.
 
 - VBA needs the optional .NET helper built from [`vba/`](vba/README.md).
-- Python needs a local Python 3 interpreter (`NANSHE_PYTHON` selects a virtual environment).
+- Python needs a local Python 3 interpreter (`TAVRU_SHEETS_PYTHON` selects a virtual environment).
 - R needs a local R installation and the `jsonlite` package (`NANSHE_RSCRIPT` selects Rscript).
 - The Scribe pane requires a local Oqelith runtime and a registered chat model. Open Scribe and
   send a request. Responses can explain a selection,
@@ -47,8 +47,9 @@ not a signed Tavru Sheets release. The upstream self-update feed is disabled for
 
 ## License and credits
 
-MIT OR Apache-2.0. Nanshe is copyright (c) 2026 ArtCraft Team and the Nanshe contributors;
-Nisaba-derived and Nanshe changes are copyright (c) 2026 Tom Blanchard. See [NOTICE](NOTICE) and
-[ATTRIBUTION.md](ATTRIBUTION.md). Tavru Sheets is not sponsored or endorsed by the ArtCraft team.
+MIT OR Apache-2.0. Upstream copyright remains with the ArtCraft Team and the GridCraft contributors.
+Fork changes are copyright (c) 2026 Tom Blanchard; NOTICE still records those changes under the
+earlier Nanshe and Nisaba names. See [NOTICE](NOTICE) and [ATTRIBUTION.md](ATTRIBUTION.md).
+Tavru Sheets is not sponsored or endorsed by the ArtCraft team.
 
 Voice accessibility preview: see [dictation, transcription, translation and safe voice controls](docs/VOICE.md).

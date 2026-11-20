@@ -58,7 +58,7 @@ echo "==> CellTrellis $VERSION for macOS ($ARCH), identity: $IDENTITY, notarize:
 if [[ "$SKIP_BUILD" = 0 ]]; then
   args=()
   for t in "${TARGETS[@]}"; do args+=(--target "$t"); done
-  (cd "$ROOT" && cargo build --release --locked -p nanshe -p nanshe-cli "${args[@]}")
+  (cd "$ROOT" && cargo build --release --locked -p tavru-sheets -p nanshe-cli "${args[@]}")
 fi
 
 rm -rf "$WORK"

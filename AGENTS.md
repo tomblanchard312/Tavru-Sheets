@@ -42,7 +42,7 @@ People trust Nanshe with their numbers; a crash loses their work. **This outrank
 - **Quality gates** before every commit: `cargo xtask ci` (fmt, clippy -D warnings, tests, assets, layers, wasm). One task id per commit (`M2.1: borders gallery`).
 
 ## Running and looking at the app
-- `cargo run --release -p nanshe -- --sample sales --control 7979` (sample workbook + control channel).
+- `cargo run --release -p tavru-sheets -- --sample sales --control 7979` (sample workbook + control channel).
 - Drive it: `nanshe-cli send 7979 <method> '<json>'` (reads the token file the app printed on stderr), or JSON lines on `127.0.0.1:7979` whose first line is `{"id":0,"method":"auth","params":{"token":"…"}}` (token: `$XDG_RUNTIME_DIR/nanshe/control-7979.token`, or your own `NANSHE_CONTROL_TOKEN`), e.g. `{"id":1,"method":"engine.execute","params":{"command":"cell.set","params":{"cell":"B2","input":"=SUM(A1:A9)"}}}` then `{"id":2,"method":"ui.screenshot","params":{"path":"/tmp/shot.png"}}`. Methods: `crates/ui-egui/src/control.rs`, docs: `docs/control-protocol.md`.
 - **Offscreen UI render** (no window, from a source checkout): `cargo run -p nanshe-ui-egui --example snapshot -- --sample sales out.png`.
 - Headless: `nanshe-cli eval '=SUM(1,2,3)'`, `nanshe-cli run --in book.xlsx --cmd 'home.bold={"range":"A1:C1"}' --out book.xlsx`, `nanshe-cli mcp`.

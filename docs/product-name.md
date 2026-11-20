@@ -1,9 +1,7 @@
 # Tavru Sheets product name
 
-Nanshe is now **Tavru Sheets**, effective 2026-10-29.
+The public name is **Tavru Sheets**. Earlier public names were Nanshe and CellTrellis. The window title, About, help and translated product labels use Tavru Sheets. The repository is `tomblanchard312/Tavru-Sheets`.
 
-Window titles, About/help text, translated product labels and installer/launcher display names use the new name. Existing settings/recovery folders, application IDs, installation registry keys, command names, automation namespaces and repository URLs are retained for compatibility. Existing saved documents and Oqelith model data are not moved.
+Cargo packages, the `nanshe` and `nanshe-cli` binaries, `NANSHE_PYTHON`, `NANSHE_RSCRIPT`, `NANSHE_VBA_RUNNER`, settings directories, application IDs and automation namespaces stay on the Nanshe names. A local `celltrellis` launcher alias may still be present. Saved workbooks and Oqelith model data are not moved.
 
-Approved blue-and-gold purpose-based icons identify the product without relying on its first letter. Original upstream copyright and licence notices are retained.
-
-New desktop launcher aliases are provided locally as `celltrellis`; existing command names continue to work.
+The Developer guide file is still [nanshe-developer.md](nanshe-developer.md). That filename is the path the runtime error text points at.

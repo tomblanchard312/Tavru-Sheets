@@ -1007,7 +1007,7 @@ fn scribe_instruction(mode: &str) -> &'static str {
             "Return only one VBA module with Sub Main(). Use Application, ActiveWorkbook, Worksheets, Range, Cells, Value, Formula, Font. No files, shell, network, or auto-run events."
         }
         "Write Python" => {
-            "Return only Python code. Use nanshe.read(address, sheet=0) for row lists, nanshe.write(address, rows, sheet=0, formulas=False) for literal values, formulas=True for formulas. No files or network."
+            "Return only Python code. Use workbook.read(address, sheet=0) for row lists, workbook.write(address, rows, sheet=0, formulas=False) for literal values, formulas=True for formulas. No files or network."
         }
         "Write R" => {
             "Return only R code. Use sheet_read(address, sheet=0) for row lists and sheet_write(address, matrix_or_dataframe, sheet=0, formulas=FALSE). No files or network."
@@ -1018,7 +1018,7 @@ fn scribe_instruction(mode: &str) -> &'static str {
 
 fn sample(language: &str) -> &'static str {
     match language {
-        "Python" => "rows = nanshe.read(\"A1:A3\")\nprint(rows)\nnanshe.write(\"B1\", [[sum(row[0] or 0 for row in rows)]])\n",
+        "Python" => "rows = workbook.read(\"A1:A3\")\nprint(rows)\nworkbook.write(\"B1\", [[sum(row[0] or 0 for row in rows)]])\n",
         "R" => "rows <- sheet_read(\"A1:A3\")\nprint(rows)\nsheet_write(\"B1\", matrix(sum(unlist(rows)), nrow = 1))\n",
         _ => SAMPLE,
     }
@@ -1288,7 +1288,7 @@ mod tests {
         assert_eq!(answer("Visible<thi"), "Visible");
         #[cfg(not(target_arch = "wasm32"))]
         {
-            assert!(scribe_instruction("Write Python").contains("nanshe.read"));
+            assert!(scribe_instruction("Write Python").contains("workbook.read"));
             assert!(scribe_instruction("Write R").contains("sheet_read"));
         }
     }

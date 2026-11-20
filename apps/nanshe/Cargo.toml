@@ -1,11 +1,15 @@
 [package]
-name = "nanshe"
+name = "tavru-sheets"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish = false
 default-run = "nanshe"
 description = "Tavru Sheets desktop app"
+
+[[bin]]
+name = "nanshe"
+path = "src/main.rs"
 
 [lints]
 workspace = true

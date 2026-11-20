@@ -1,4 +1,4 @@
-"""Nanshe's trusted Python runner. Workbook calls use private JSON lines."""
+"""Tavru Sheets trusted Python runner. Workbook calls use private JSON lines."""
 import builtins
 import io
 import json
@@ -63,8 +63,8 @@ try:
     if len(source.encode("utf-8")) > 128 * 1024:
         raise ValueError("Source exceeds 128 KiB")
     sys.stdout = sys.stderr = Output()
-    scope = {"nanshe": Workbook(), "__name__": "__main__", "__builtins__": builtins}
-    exec(compile(source, "<Nanshe Python>", "exec"), scope)
+    scope = {"workbook": Workbook(), "__name__": "__main__", "__builtins__": builtins}
+    exec(compile(source, "<Tavru Sheets Python>", "exec"), scope)
     emit({"type": "done"})
 except BaseException as error:
     emit({"type": "error", "message": f"{type(error).__name__}: {error}"[:8000]})

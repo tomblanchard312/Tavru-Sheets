@@ -55,7 +55,7 @@ pub(super) fn missing_runtime(language: &str) -> Option<String> {
             "Reinstall the complete Tavru Sheets package, including its VBA runtime, or configure NANSHE_VBA_RUNNER.",
         ),
         "Python" => {
-            ("NANSHE_PYTHON", "python/python.exe", if cfg!(windows) { "python" } else { "python3" }, "Install Python 3 and configure NANSHE_PYTHON.")
+            ("TAVRU_SHEETS_PYTHON", "python/python.exe", if cfg!(windows) { "python" } else { "python3" }, "Install Python 3 and configure TAVRU_SHEETS_PYTHON.")
         }
         "R" => ("NANSHE_RSCRIPT", "R/bin/Rscript.exe", "Rscript", "Install R with jsonlite and configure NANSHE_RSCRIPT."),
         _ => return Some("Unknown scripting language".into()),
@@ -90,7 +90,7 @@ pub(super) fn macro_preview(program: &Path, source: &str, name: &str, doc: DocSt
 pub(super) fn script_preview(language: &str, source: &str, doc: DocState, cancel: Arc<AtomicBool>) -> Result<Json, String> {
     let command = match language {
         "Python" => {
-            let mut cmd = Command::new(program("NANSHE_PYTHON", "python/python.exe", if cfg!(windows) { "python" } else { "python3" }));
+            let mut cmd = Command::new(program("TAVRU_SHEETS_PYTHON", "python/python.exe", if cfg!(windows) { "python" } else { "python3" }));
             cmd.args(["-I", "-u", "-X", "utf8", "-c", include_str!("runners/python.py")]);
             cmd
         }
@@ -347,11 +347,11 @@ mod tests {
     }
     #[test]
     fn python_preview_reads_recalculates_and_keeps_strings_literal() {
-        let result = script_preview("Python", "nanshe.write('A1', [[12]])\nnanshe.write('B1', [['=A1*2']], formulas=True)\nprint(nanshe.read('B1')[0][0])\nnanshe.write('C1', [['=literal']])", doc(), Arc::new(AtomicBool::new(false))).unwrap();
+        let result = script_preview("Python", "workbook.write('A1', [[12]])\nworkbook.write('B1', [['=A1*2']], formulas=True)\nprint(workbook.read('B1')[0][0])\nworkbook.write('C1', [['=literal']])", doc(), Arc::new(AtomicBool::new(false))).unwrap();
         assert_eq!(result["output"], "24.0\n");
         let commands = result["commands"].as_array().unwrap();
         assert_eq!(commands.last().unwrap()["params"]["values"][0][0], "'=literal");
-        assert!(script_preview("Python", "nanshe.execute('file.save', path='unsafe.xlsx')", doc(), Arc::new(AtomicBool::new(false))).is_err());
+        assert!(script_preview("Python", "workbook.execute('file.save', path='unsafe.xlsx')", doc(), Arc::new(AtomicBool::new(false))).is_err());
     }
 
     #[test]

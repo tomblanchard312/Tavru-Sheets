@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: rustup toolchain install stable --profile minimal
-      - run: cargo +stable build -p nanshe -p nanshe-cli
+      - run: cargo +stable build -p tavru-sheets -p nanshe-cli
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
@@ -73,9 +73,9 @@ jobs:
       - run: python3 packaging/stage-runtimes.py --rid linux-x64 --out "$RUNNER_TEMP/nanshe-runtime" --scripts system --check-system
       - run: |
           export NANSHE_VBA_TEST_RUNNER="$RUNNER_TEMP/nanshe-runtime/vba/Nanshe.Vba"
-          NANSHE_PYTHON="$(command -v python)"
+          TAVRU_SHEETS_PYTHON="$(command -v python)"
           NANSHE_RSCRIPT="$(command -v Rscript)"
-          export NANSHE_PYTHON NANSHE_RSCRIPT
+          export TAVRU_SHEETS_PYTHON NANSHE_RSCRIPT
           cargo +stable test -p nanshe-ui-egui developer --lib
           cargo +stable test -p nanshe-engine cmd::developer --lib
           cargo +stable test -p nanshe-enki

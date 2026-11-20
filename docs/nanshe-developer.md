@@ -30,7 +30,7 @@ Install a .NET SDK 10 or later and build:
 dotnet build vba/NansheVba.sln -m:1
 # Use the directory for your SDK's target framework (net8.0, net9.0, net10.0...).
 export NANSHE_VBA_RUNNER="$PWD/vba/src/Nanshe.Vba/bin/Debug/net10.0/Nanshe.Vba"
-cargo run -p nanshe
+cargo run -p tavru-sheets
 ```
 
 Complete native packages include a self-contained VBA helper and its notices; no user SDK is needed.
@@ -75,22 +75,25 @@ imported or executed. There is no debugger or Excel COM automation.
 
 ### Python
 
-Python 3 is looked up as `python3` (`python` on Windows). Set `NANSHE_PYTHON` to the executable
+The Python bridge is named `workbook`. Update stored scripts from older builds to use
+this name before running them.
+
+Python 3 is looked up as `python3` (`python` on Windows). Set `TAVRU_SHEETS_PYTHON` to the executable
 inside a virtual environment if you need installed packages such as pandas or NumPy. The runner
 uses Python's standard-library JSON support and isolated startup (`-I`); user-site packages,
 PYTHONPATH and startup customization are not loaded. Packages installed in the selected virtual
 environment can be imported normally.
 
 ```python
-rows = nanshe.read("A1:A3", sheet="Sheet1")
+rows = workbook.read("A1:A3", sheet="Sheet1")
 total = sum(row[0] or 0 for row in rows)
-nanshe.write("B1", [[total]])
-nanshe.write("C1", [["=SUM(A1:A3)"]], formulas=True)
+workbook.write("B1", [[total]])
+workbook.write("C1", [["=SUM(A1:A3)"]], formulas=True)
 print(total)
 ```
 
 `read` returns rows of scalar values. `write` takes rows of values (e.g. a dataframe's
-`df.values.tolist()`). Strings are literal unless `formulas=True`. `nanshe.execute` also exposes
+`df.values.tolist()`). Strings are literal unless `formulas=True`. `workbook.execute` also exposes
 the bounded workbook command allow-list, never file/desktop/nested-automation commands.
 
 ### R

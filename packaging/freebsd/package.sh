@@ -44,7 +44,7 @@ BASENAME="nanshe-$VERSION-freebsd-$ARCH"
 echo "==> CellTrellis $VERSION for FreeBSD $ARCH"
 
 if [[ "$SKIP_BUILD" = 0 ]]; then
-  (cd "$ROOT" && cargo build --release --locked -p nanshe -p nanshe-cli ${CARGO_BUILD_TARGET:+--target "$CARGO_BUILD_TARGET"})
+  (cd "$ROOT" && cargo build --release --locked -p tavru-sheets -p nanshe-cli ${CARGO_BUILD_TARGET:+--target "$CARGO_BUILD_TARGET"})
 fi
 BIN="$CARGO_TARGET_DIR/${CARGO_BUILD_TARGET:+$CARGO_BUILD_TARGET/}release"
 WORK="$CARGO_TARGET_DIR/freebsd-package"
